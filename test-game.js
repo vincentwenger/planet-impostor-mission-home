@@ -31,14 +31,14 @@ assert.equal(state.difficulty,'easy');
 assert.equal(state.fuel,150);
 assert.equal(get('difficultyOptions').children[0].disabled,false);
 for(const index of [1,2,3])assert.equal(get('difficultyOptions').children[index].disabled,true);
-const allLegChoices=[
- ['Earth','Moon'],['Moon','Mars'],
- ['Mars','Moon'],['Moon','Earth'],
- ['Earth','Moon'],['Moon','Mars']
-];
-const allLegRoutes=[['Earth','Moon'],['Moon','Mars'],['Mars','Moon'],['Moon','Earth'],['Earth','Moon'],['Moon','Mars']];
-assert.equal(vm.runInContext('LEGS.length',ctx),10); // six chapter flights plus 4 loop templates
-assert.equal(get('stageCounter').innerHTML,'0<span>/ 6</span>');
+const threeFlightRoute=[['Earth','Moon'],['Moon','Mars'],['Mars','Earth']];
+const allLegRoutes=[...threeFlightRoute,...threeFlightRoute,...threeFlightRoute,...threeFlightRoute];
+const allLegChoices=allLegRoutes;
+assert.equal(vm.runInContext('LEGS.length',ctx),12); // Nine chapter flights + three Insane loop templates
+assert.equal(vm.runInContext('INSANE_START_LEG',ctx),9);
+assert.equal(vm.runInContext('INSANE_LEG_COUNT',ctx),3);
+assert.equal(get('stageCounter').innerHTML,'0<span>/ 9</span>');
+assert(get('difficultyHint').textContent.includes('Return to Earth')||get('difficultyHint').textContent.includes('→ Earth'));
 function answerCorrect(test){
  const {state,ctx,get}=test;
  const i=vm.runInContext('currentLeg().options.indexOf(state.question.world)',ctx);
@@ -51,37 +51,41 @@ function answerWrong(test){
 }
 get('launchButton').click();assert.equal(state.leg,0);assert.equal(state.status,'quiz');
 let scoreBefore=0;
-const points=[100,100,200,200,350,350];
-for(let leg=0;leg<6;leg++){
- const expectedMode=leg<2?'easy':leg<4?'medium':'hard';
+const points=[100,100,100,200,200,200,350,350,350];
+for(let leg=0;leg<9;leg++){
+ const expectedMode=leg<3?'easy':leg<6?'medium':'hard';
  assert.equal(state.leg,leg);assert.equal(state.status,'quiz');assert.equal(state.difficulty,expectedMode);
  const opts=vm.runInContext('currentLeg().options',ctx);
  assert.deepEqual([...opts],allLegChoices[leg]);
  assert.deepEqual([...vm.runInContext('([currentLeg().from,currentLeg().to])',ctx)],allLegRoutes[leg]);
- assert.equal(get('answerButtons').children.length,opts.length);
- assert.equal(get('answerButtons').classList.contains('three-choices'),opts.length===3);
+ assert.equal(get('answerButtons').children.length,2);
+ assert.equal(get('answerButtons').classList.contains('three-choices'),false);
+ assert.equal(get('questionPhase').textContent,allLegChoices[leg].join(' OR ').toUpperCase()+'?');
+ assert(allLegChoices[leg].includes(state.question.world),'photo must match the 2 choices');
  state.progress=92;state.fuel=80;
  scoreBefore=state.score;
  answerCorrect({get,ctx,state});
  assert.equal(state.score,scoreBefore+points[leg]);
  assert.equal(state.status,'answer');assert(state.progress>=100);
  get('nextQuestion').click();assert.equal(state.status,'landing');
- if(leg===0){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1')??null,null)}
- if(leg===1){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1');assert.equal(state.difficulty,'medium');assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'))}
- if(leg===2){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1')}
- if(leg===3){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');assert.equal(state.difficulty,'hard');assert(get('dialogReward').innerHTML.includes('HARD MODE UNLOCKED'))}
- if(leg===4){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2')}
- if(leg===5){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');assert.equal(state.difficulty,'insane');assert(get('dialogReward').innerHTML.includes('INSANE MODE UNLOCKED'))}
+ // Only the Mars → Earth leg unlocks the next difficulty.
+ if(leg===0||leg===1)assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1')??null,null);
+ if(leg===2){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1');assert.equal(state.difficulty,'medium');assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'));assert.equal(get('dialogTitle').textContent,'Earth reached!')}
+ if(leg===3||leg===4)assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1');
+ if(leg===5){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');assert.equal(state.difficulty,'hard');assert(get('dialogReward').innerHTML.includes('HARD MODE UNLOCKED'));assert.equal(get('dialogTitle').textContent,'Earth reached!')}
+ if(leg===6||leg===7)assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');
+ if(leg===8){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');assert.equal(state.difficulty,'insane');assert(get('dialogReward').innerHTML.includes('INSANE MODE UNLOCKED'));assert.equal(get('dialogTitle').textContent,'Earth reached!')}
  get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,leg+1);
+ if([2,5,8].includes(leg))assert.equal(get('sceneFrom').textContent,'EARTH','each new difficulty starts on Earth');
 }
 assert.equal(state.difficulty,'insane');
 assert.equal(get('difficultyOptions').children.length,4);
-const endlessRoute=[['Mars','Moon'],['Moon','Earth'],['Earth','Moon'],['Moon','Mars']];
-// Test 12 additional endless legs: routing repeats after four, no final win.
+const endlessRoute=threeFlightRoute;
+// Test 12 additional endless legs: route repeats after three, no final win.
 for(let i=0;i<12;i++){
- assert.equal(state.leg,6+i);assert.equal(state.status,'quiz');
+ assert.equal(state.leg,9+i);assert.equal(state.status,'quiz');
  assert.equal(state.difficulty,'insane');
- assert.deepEqual([...vm.runInContext('([currentLeg().from,currentLeg().to])',ctx)],endlessRoute[i%4]);
+ assert.deepEqual([...vm.runInContext('([currentLeg().from,currentLeg().to])',ctx)],endlessRoute[i%3]);
  state.progress=94;state.fuel=90;
  const previousStreak=state.insaneStreak, previousScore=state.score;
  answerCorrect({get,ctx,state});
@@ -101,13 +105,25 @@ assert.equal(state.status,'failed');assert.equal(state.score,finalScore);
 assert.equal(get('dialogTitle').textContent,'One wrong answer — game over!');
 assert(get('dialogReward').innerHTML.includes('FINAL SURVIVAL SCORE'));
 assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');
-get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,6);assert.equal(state.difficulty,'insane');assert.equal(state.insaneStreak,0);assert.equal(state.score,0);
-// A separately selected unlocked Insane run begins from Mars, with the rank still saved.
+get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,9);assert.equal(state.difficulty,'insane');assert.equal(state.insaneStreak,0);assert.equal(state.score,0);
+// A separately selected unlocked Insane run begins from Earth, with the rank still saved.
 ({get,doc,ctx,state,qbank}=createGame());
 assert.equal(get('difficultyOptions').children[3].disabled,false);
-get('difficultyOptions').children[3].click();assert.equal(state.difficulty,'insane');assert.equal(get('sceneFrom').textContent,'MARS');
-get('launchButton').click();assert.equal(state.leg,6);
+get('difficultyOptions').children[3].click();assert.equal(state.difficulty,'insane');assert.equal(get('sceneFrom').textContent,'EARTH');
+get('launchButton').click();assert.equal(state.leg,9);
 answerCorrect({get,ctx,state});assert.equal(state.score,500);
+// Replay can start from any previously unlocked difficulty, always from Earth.
+for(const [mode,start] of [['easy',0],['medium',3],['hard',6],['insane',9]]){
+ const replay=createGame(saved);
+ const modeIndex=['easy','medium','hard','insane'].indexOf(mode);
+ assert.equal(replay.get('difficultyOptions').children[modeIndex].disabled,false);
+ replay.get('difficultyOptions').children[modeIndex].click();
+ assert.equal(replay.get('sceneFrom').textContent,'EARTH');
+ assert.equal(replay.get('sceneTo').textContent,'MOON');
+ replay.get('launchButton').click();
+ assert.equal(replay.state.leg,start);
+ assert.equal(replay.state.difficulty,mode);
+}
 // Failure on earlier difficulties still follows the original retry mechanic.
 vm.runInContext('resetGame()',ctx);
 get('difficultyOptions').children[0].click();get('launchButton').click();state.fuel=1;
@@ -115,8 +131,8 @@ answerWrong({get,ctx,state});assert.equal(state.status,'answer');
 get('nextQuestion').click();assert.equal(state.status,'failed');
 assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');
 // Every flight now has exactly two choices; number 3 must never answer.
-for(const legIndex of [0,1,2,3,4,5,6,7,8,9]){
- vm.runInContext(`state.difficulty='${legIndex>=6?'insane':legIndex>=4?'hard':legIndex>=2?'medium':'easy'}';startLeg(${legIndex})`,ctx);
+for(const legIndex of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]){
+ vm.runInContext(`state.difficulty='${legIndex>=9?'insane':legIndex>=6?'hard':legIndex>=3?'medium':'easy'}';startLeg(${legIndex})`,ctx);
  assert.equal(get('answerButtons').children.length,2);
  const allowed=vm.runInContext('currentLeg().options',ctx);
  assert.equal(allowed.length,2);
@@ -127,7 +143,7 @@ for(const legIndex of [0,1,2,3,4,5,6,7,8,9]){
  doc.listeners.keydown({key:'3'});assert.equal(state.status,'quiz','key 3 cannot answer a 2-choice question');
 }
 // The two number keys remain functional.
-vm.runInContext("state.difficulty='insane';startLeg(6)",ctx);
+vm.runInContext("state.difficulty='insane';startLeg(9)",ctx);
 const key=vm.runInContext('currentLeg().options.indexOf(state.question.world)+1',ctx);
 doc.listeners.keydown({key:String(key)});assert.equal(state.status,'answer');
 assert(saved.has('planet-impostor-recent-photo-ids-v1'));
@@ -164,7 +180,7 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  const store=new Map(), game=createGame(store), seen=new Set();
  // The Moon/Mars photo pool has 44 curated images (20 Moon + 24 Mars).
  for(let i=0;i<20;i++){
-   const q=choose(game,i%2===0?1:2);
+   const q=choose(game,i%2===0?1:10);
    assert(['Moon','Mars'].includes(q.world),'Earth photos must not appear on Moon/Mars journeys');
    assert(!seen.has(q.id),'repeated an image during the 44-image Moon/Mars cycle');
    seen.add(q.id);
@@ -173,7 +189,7 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  vm.runInContext('resetGame()',game.ctx);
  const refreshed=createGame(store);
  for(let i=20;i<44;i++){
-   const q=choose(refreshed,i%2===0?1:2);
+   const q=choose(refreshed,i%2===0?1:10);
    assert(['Moon','Mars'].includes(q.world),'Earth photos must not appear on Moon/Mars journeys');
    assert(!seen.has(q.id),'repeated an image after restart or page reload');
    seen.add(q.id);
@@ -183,6 +199,27 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  const recycled=choose(refreshed,1);
  assert(seen.has(recycled.id),'repeats may begin only after all 44 Moon/Mars images have been used');
  assert.equal(JSON.parse(store.get(CYCLE_KEY)).length,1,'new cycle should contain only the next image');
+}
+{
+ // The new direct Mars → Earth route has 46 eligible curated images (24 Mars + 22 Earth).
+ const store=new Map(), game=createGame(store), seen=new Set();
+ for(let i=0;i<23;i++){
+   const q=choose(game,2);
+   assert(['Mars','Earth'].includes(q.world),'Moon photos must not appear on Mars/Earth journeys');
+   assert(!seen.has(q.id),'Mars/Earth image repeated before the pool was exhausted');
+   seen.add(q.id);
+ }
+ const reloaded=createGame(store);
+ for(let i=23;i<46;i++){
+   const q=choose(reloaded,5);
+   assert(['Mars','Earth'].includes(q.world),'Moon photos must not appear on Mars/Earth journeys');
+   assert(!seen.has(q.id),'Mars/Earth image repeated after refresh');
+   seen.add(q.id);
+ }
+ assert.equal(seen.size,46);
+ const recycled=choose(reloaded,8);
+ assert(seen.has(recycled.id),'Mars/Earth pool may recycle after every eligible image was shown');
+ assert.equal(JSON.parse(store.get(CYCLE_KEY)).length,1);
 }
 {
  const store=new Map([[LEGACY_KEY,JSON.stringify(['PIA17632','PIA04452'])]]);
@@ -207,4 +244,4 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  for(let i=0;i<43;i++)choose(game,0);
  for(const id of marsBefore)assert(game.state.usedPhotoIDs.has(id),'Earth/Moon recycling erased Mars history');
 }
-console.log('PASS — v1.12 two choices on every flight, no Earth in Moon/Mars legs, escalating points, endless Insane, immediate loss, persistent no-repeat images and fuel.');
+console.log('PASS — v1.13 three-leg Earth → Moon → Mars → Earth cycles per difficulty; Earth-only unlocks; Mars/Earth NASA choices; exponential and endless Insane; immediate loss; persistent no-repeat images and fuel.');

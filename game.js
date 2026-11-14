@@ -1,25 +1,32 @@
 'use strict';
 const $=id=>document.getElementById(id);
-// Continuous adventure: Easy Earth → Moon → Mars, Medium Mars → Moon → Earth,
-// Hard Earth → Moon → Mars, then endless Insane Mars ↔ Moon ↔ Earth ↔ Moon ↔ Mars.
-// Insane begins on Mars and ends only after a wrong answer or running out of fuel.
+// Every difficulty starts on Earth and completes the same three-flight loop:
+// Earth → Moon → Mars → Earth. Landing back on Earth advances Easy → Medium → Hard
+// → endless Insane. Insane repeats that route indefinitely until a wrong answer
+// or depleted fuel ends the survival run.
 const LEGS=[
+  // Easy: Earth → Moon → Mars → Earth.
   {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'LUNAR APPROACH',subtitle:'Find the Moon among real NASA observations. Each correct decision brings you closer to the lunar base.',reward:'🌙 Lunar Navigator badge',message:'Moon Base Alpha: fuel tanks refilled. Next destination: Mars.'},
-  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'THE RED PLANET',subtitle:'Identify Moon or Mars terrain to steer toward the red planet through deep space.',reward:'🔴 Mars Pathfinder badge',message:'Mars reached! Easy mission cleared. Your next flight begins from Mars on Medium.'},
-  {from:'Mars',to:'Moon',options:['Mars','Moon'],name:'RETURN TO LUNAR ORBIT',subtitle:'The return journey tests whether you can distinguish Mars and Moon landscapes.',reward:'✨ Deep Space Voyager badge',message:'Lunar Base Alpha: fuel tanks refilled. Earth is waiting.'},
-  {from:'Moon',to:'Earth',options:['Moon','Earth'],name:'MISSION HOME',subtitle:'Recognize Earth or Moon terrain and guide your spacecraft safely home.',reward:'🌍 Earth Return badge',message:'Earth reached! Medium mission cleared. The final expedition launches toward Mars on Hard.'},
-  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'FINAL LUNAR APPROACH',subtitle:'The Hard expedition starts on Earth. Identify Earth and Moon landscapes to reach the lunar base.',reward:'🚀 Elite Lunar Navigator badge',message:'Lunar Base Alpha: refueled for the final push to Mars.'},
-  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'FINAL MARS MISSION',subtitle:'Prove yourself on Hard! Reach Mars to unlock the endless Insane survival mode.',reward:'🏆 Hard Mode Champion trophy',message:'Hard complete! Endless Insane mode begins on Mars.'},
-  {from:'Mars',to:'Moon',options:['Mars','Moon'],name:'INSANE: LUNAR RETURN',subtitle:'One mistake ends the run. Identify each landscape to survive the journey from Mars to the Moon.',reward:'☄️ Insane Lunar Landing',message:'Insane run continues: next flight goes to Earth.'},
-  {from:'Moon',to:'Earth',options:['Moon','Earth'],name:'INSANE: EARTH LANDING',subtitle:'Trust your instincts. One wrong world means mission failure.',reward:'🌍 Insane Earth Landing',message:'You survived the return to Earth. Now launch again toward the Moon.'},
-  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'INSANE: LUNAR APPROACH',subtitle:'The survival loop continues. No mistakes allowed!',reward:'🌕 Insane Lunar Landing',message:'Refuel and head toward Mars.'},
-  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'INSANE: MARS LANDING',subtitle:'Identify Moon or Mars to survive the trip to the red planet.',reward:'🔴 Insane Mars Landing',message:'Welcome back to Mars. Next leg begins the loop again.'}
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'THE RED PLANET',subtitle:'Identify Moon or Mars terrain to steer toward the red planet through deep space.',reward:'🔴 Mars Pathfinder badge',message:'Mars reached! Refuel and begin the journey home to Earth.'},
+  {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'MISSION HOME',subtitle:'Identify Mars or Earth landscapes on your journey back home.',reward:'🌍 Easy Earth Return badge',message:'Earth reached! Easy mission cleared. The Medium expedition begins on Earth.'},
+  // Medium: the same complete round trip, with higher difficulty and points.
+  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'MEDIUM: LUNAR APPROACH',subtitle:'Start a new expedition from Earth and identify Earth or Moon imagery.',reward:'✨ Medium Lunar Navigator badge',message:'Moon reached! Fuel refilled for the flight to Mars.'},
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'MEDIUM: RED PLANET',subtitle:'Tell Moon and Mars terrain apart to continue your Medium expedition.',reward:'🚀 Medium Mars Pathfinder badge',message:'Mars reached! Head straight back to Earth.'},
+  {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'MEDIUM: RETURN HOME',subtitle:'Identify Mars or Earth landscapes to complete the Medium expedition.',reward:'🌍 Medium Earth Return badge',message:'Earth reached! Medium mission cleared. Hard begins from home.'},
+  // Hard: one more complete Earth → Moon → Mars → Earth loop.
+  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'HARD: LUNAR APPROACH',subtitle:'Launch from Earth for a challenging lunar approach.',reward:'⚡ Elite Lunar Navigator badge',message:'Moon reached! Refueled for the challenging voyage to Mars.'},
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'HARD: RED PLANET',subtitle:'Use NASA Moon and Mars observations to navigate this demanding flight.',reward:'🔴 Elite Mars Pathfinder badge',message:'Mars reached! Return to Earth to unlock Insane survival mode.'},
+  {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'HARD: MISSION HOME',subtitle:'Recognize Mars or Earth to finish Hard and unlock the ultimate survival challenge.',reward:'🏆 Hard Mode Champion trophy',message:'Earth reached! Hard complete. Endless Insane begins on Earth.'},
+  // Insane repeats these three flights forever until the player loses.
+  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'INSANE: LUNAR APPROACH',subtitle:'Survive the flight from Earth to the Moon. One wrong answer ends your run.',reward:'🌕 Insane Lunar Landing',message:'Refuel and head for Mars. Your streak carries over.'},
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'INSANE: RED PLANET',subtitle:'Identify Moon or Mars to survive another flight.',reward:'🔴 Insane Mars Landing',message:'Mars reached! Return directly to Earth without making a mistake.'},
+  {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'INSANE: EARTH RETURN',subtitle:'Distinguish Mars from Earth terrain. One mistake ends the run.',reward:'🌍 Insane Earth Return',message:'You are home! Start another endless three-flight cycle.'}
 ];
-const INSANE_START_LEG=6;
-const INSANE_LEG_COUNT=4;
+const INSANE_START_LEG=9;
+const INSANE_LEG_COUNT=3;
 function legAt(index){return index<LEGS.length?LEGS[index]:LEGS[INSANE_START_LEG+(index-INSANE_START_LEG)%INSANE_LEG_COUNT]}
 function currentLeg(){return legAt(state.leg)}
-const START_LEG_FOR_DIFFICULTY={easy:0,medium:2,hard:4,insane:6};
+const START_LEG_FOR_DIFFICULTY={easy:0,medium:3,hard:6,insane:9};
 // Each difficulty is an automatic spacecraft/fuel profile; players choose only difficulty.
 // Values are illustrative arcade mechanics, NOT physical mission-engineering calculations.
 const DIFFICULTY={
@@ -70,7 +77,7 @@ function makeOptionCards(container,choices,selected,onSelect){
     b.className='pick-card'+(selected===key?' active':'')+(locked?' locked':'');
     b.type='button';b.disabled=locked;
     b.setAttribute('aria-pressed',String(selected===key&&!locked));
-    if(locked)b.setAttribute('title',key==='medium'?'Reach Mars on Easy to unlock Medium':key==='hard'?'Return to Earth on Medium to unlock Hard':'Reach Mars on Hard to unlock Insane');
+    if(locked)b.setAttribute('title',key==='medium'?'Return to Earth on Easy to unlock Medium':key==='hard'?'Return to Earth on Medium to unlock Hard':'Return to Earth on Hard to unlock Insane');
     const caption=locked?(key==='medium'?'Beat Easy to unlock':key==='hard'?'Beat Medium to unlock':'Beat Hard to unlock'):v.tag;
     b.innerHTML=`<span class="pick-symbol">${locked?'🔒':v.icon}</span><strong>${v.name}</strong><small>${caption}</small>`;
     if(!locked)b.addEventListener('click',()=>onSelect(key));
@@ -81,7 +88,7 @@ function drawSetup(){
   if(!isUnlocked(state.difficulty))state.difficulty='easy';
   makeOptionCards('difficultyOptions',DIFFICULTY,state.difficulty,key=>{state.difficulty=key;drawSetup()});
   const d=DIFFICULTY[state.difficulty];
-  $('difficultyHint').textContent=unlockedRank===0?'Reach Mars on Easy to unlock Medium.':unlockedRank===1?'Medium unlocked! Return to Earth on Medium to unlock Hard.':unlockedRank===2?'Hard unlocked! Reach Mars on Hard to unlock Insane.':'Insane unlocked! Survive as long as you can with no wrong answers.';
+  $('difficultyHint').textContent=unlockedRank===0?'Finish Earth → Moon → Mars → Earth on Easy to unlock Medium.':unlockedRank===1?'Medium unlocked! Return to Earth on Medium to unlock Hard.':unlockedRank===2?'Hard unlocked! Return to Earth on Hard to unlock Insane.':'Insane unlocked! Survive endless Earth → Moon → Mars → Earth cycles with no wrong answers.';
   $('designReport').innerHTML=`<b>${d.name.toUpperCase()} FLIGHT RULES</b><br>+${d.speed}% per correct answer · ${state.difficulty==='insane'?'One wrong answer ends your run':'−'+d.setback+'% per wrong answer'}<br>${d.burn} fuel per correct · ${d.capacity} fuel at takeoff.<br>${state.difficulty==='insane'?'First correct: +500 points; each next correct earns 10% more. Endless journey.':'Correct answer: +'+d.points+' points.'}<br><small>Flight and fuel values are simplified for gameplay, not real NASA trajectory calculations.</small>`;
   const openingLeg=legAt(START_LEG_FOR_DIFFICULTY[state.difficulty]);
   setPlanet($('planetStart'),openingLeg.from);setPlanet($('planetEnd'),openingLeg.to);
@@ -99,7 +106,7 @@ function insaneAward(streak){return Math.min(Number.MAX_VALUE,Math.round(DIFFICU
 function updateHUD(){const max=DIFFICULTY[state.difficulty].capacity;const fuelPct=Math.max(0,Math.min(100,100*state.fuel/max));$('progressValue').textContent=Math.round(state.progress)+'%';$('progressBar').style.width=state.progress+'%';$('fuelValue').textContent=`${state.fuel} / ${max}`;$('fuelBar').style.width=fuelPct+'%';$('fuelBar').classList.toggle('low',fuelPct<=25);$('score').textContent=formatScore(state.score);$('correctCount').textContent=state.correct;$('wrongCount').textContent=state.wrong;$('discoveryCount').textContent=state.seen.size;updateShipPosition()}
 function updateShipPosition(){const p=state.progress/100;const x=18+64*p;const y=55-37.3*4*p*(1-p);$('ship').style.left=x+'%';$('ship').style.top=y+'%'}
 function setPlanet(el,world){el.className='planet planet-'+world.toLowerCase();el.querySelector('.planet-name').textContent=world.toUpperCase()}
-function updateLegUI(){const leg=currentLeg();$('stageTitle').innerHTML=leg.name.replace(' ', '<br><span>')+'</span>';$('stageSubtitle').textContent=leg.subtitle;$('stageCounter').innerHTML=state.difficulty==='insane'?String(state.insaneLegsCompleted+1)+'<span>/ ∞</span>':(state.leg+1)+'<span>/ 6</span>';$('flightStatus').textContent=state.difficulty.toUpperCase()+' · FLIGHT '+String(state.difficulty==='insane'?state.insaneLegsCompleted+1:state.leg+1).padStart(2,'0')+' ACTIVE';setPlanet($('planetStart'),leg.from);setPlanet($('planetEnd'),leg.to);$('sceneFrom').textContent=leg.from.toUpperCase();$('sceneTo').textContent=leg.to.toUpperCase();$('questionPhase').textContent=leg.options.join(' OR ').toUpperCase()+'?';$('questionPhase').classList.toggle('three-worlds',leg.options.length===3);$('flightMessage').textContent=leg.from+' → '+leg.to+' · Navigate by identifying the worlds in NASA imagery.';updateHUD()}
+function updateLegUI(){const leg=currentLeg();$('stageTitle').innerHTML=leg.name.replace(' ', '<br><span>')+'</span>';$('stageSubtitle').textContent=leg.subtitle;$('stageCounter').innerHTML=state.difficulty==='insane'?String(state.insaneLegsCompleted+1)+'<span>/ ∞</span>':(state.leg+1)+'<span>/ 9</span>';$('flightStatus').textContent=state.difficulty.toUpperCase()+' · FLIGHT '+String(state.difficulty==='insane'?state.insaneLegsCompleted+1:state.leg+1).padStart(2,'0')+' ACTIVE';setPlanet($('planetStart'),leg.from);setPlanet($('planetEnd'),leg.to);$('sceneFrom').textContent=leg.from.toUpperCase();$('sceneTo').textContent=leg.to.toUpperCase();$('questionPhase').textContent=leg.options.join(' OR ').toUpperCase()+'?';$('questionPhase').classList.toggle('three-worlds',leg.options.length===3);$('flightMessage').textContent=leg.from+' → '+leg.to+' · Navigate by identifying the worlds in NASA imagery.';updateHUD()}
 let audioCtx;
 function beep(frequency=500,duration=.13,type='sine',volume=.09){if(!state.sound)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const oscillator=audioCtx.createOscillator(),gain=audioCtx.createGain();oscillator.type=type;oscillator.frequency.value=frequency;gain.gain.setValueAtTime(volume,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);oscillator.connect(gain).connect(audioCtx.destination);oscillator.start();oscillator.stop(audioCtx.currentTime+duration)}catch{}}
 function chime(){beep(680,.17,'triangle');setTimeout(()=>beep(920,.28,'triangle'),95)}
@@ -182,7 +189,7 @@ function stageCompleted(){
   state.score=Math.min(Number.MAX_VALUE,state.score+DIFFICULTY[completed].landing);
   state.visited.push(leg.to);
   updateHUD();chime();
-  if(state.leg===1||state.leg===3||state.leg===5){
+  if(state.leg===2||state.leg===5||state.leg===8){
     const nextDifficulty=completed==='easy'?'medium':completed==='medium'?'hard':'insane';
     const newlyUnlocked=!isUnlocked(nextDifficulty);
     unlockNextDifficulty(completed);
@@ -190,9 +197,9 @@ function stageCompleted(){
     if(nextDifficulty==='insane'){state.insaneStreak=0;state.insaneLegsCompleted=0}
     state.fuel=DIFFICULTY[nextDifficulty].capacity;
     updateHUD();
-    const milestone=completed==='medium'?'Earth reached!':'Mars reached!';
+    const milestone='Earth reached!';
     const intro=nextDifficulty==='insane'?' Insane mode is endless: one wrong answer ends the run. Each correct answer earns 10% more than the previous one.':'';
-    showDialog(completed==='medium'?'🌍':completed==='hard'?'🏆':'🔴',completed.toUpperCase()+' COMPLETE',milestone,
+    showDialog(completed==='hard'?'🏆':'🌍',completed.toUpperCase()+' COMPLETE',milestone,
       'You completed '+completed.toUpperCase()+'! Your ship refuels and continues automatically on '+nextDifficulty.toUpperCase()+' from '+leg.to+'.'+intro,
       `<strong>${leg.reward}</strong><br>${newlyUnlocked?'🔓 '+nextDifficulty.toUpperCase()+' MODE UNLOCKED!':nextDifficulty.toUpperCase()+' MODE READY'}<br>Fuel refilled to ${state.fuel}.`,
       'CONTINUE ON '+nextDifficulty.toUpperCase(),()=>startLeg(state.leg+1));
@@ -237,7 +244,7 @@ function startLeg(index){
   state.questionIndex=0;
   updateLegUI();showQuestion();
 }
-function resetGame(){state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.question=null;state.status='setup';state.insaneStreak=0;state.insaneLegsCompleted=0;$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 6</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
+function resetGame(){state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.question=null;state.status='setup';state.insaneStreak=0;state.insaneLegsCompleted=0;$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 9</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
 function saveTelemetry(){try{sessionStorage.setItem('planet-impostor-latest',JSON.stringify({leg:state.leg,progress:state.progress,fuel:state.fuel,score:state.score,correct:state.correct,wrong:state.wrong}))}catch{}}
 function drawStars(){const c=$('stars'),ctx=c.getContext('2d');if(!ctx)return;const w=window.innerWidth,h=window.innerHeight;const dpr=Math.min(devicePixelRatio||1,2);c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';ctx.scale(dpr,dpr);let seed=93;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};ctx.clearRect(0,0,w,h);for(let i=0;i<Math.floor(w*h/4800);i++){const x=rand()*w,y=rand()*h,r=rand()*1.3+.2;ctx.fillStyle=`rgba(198,228,255,${rand()*.5+.12})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}}
 $('launchButton').addEventListener('click',()=>{if(!isUnlocked(state.difficulty))return;beep(430,.25,'triangle');startLeg(START_LEG_FOR_DIFFICULTY[state.difficulty])});

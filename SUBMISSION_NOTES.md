@@ -1,16 +1,16 @@
-## Current gameplay — Version 1.12
+## Current gameplay — Version 1.13
 
-All flights now display exactly **two possible worlds**. Earth ↔ Moon journeys ask **Earth or Moon**; Moon ↔ Mars journeys ask **Moon or Mars**. Question photos come exclusively from the two worlds for the current leg, including on endless Insane flights. This makes the game more intuitive and reduces guessing choices while preserving every other mechanic.
+Each difficulty uses the same **Earth → Moon → Mars → Earth** three-flight circuit. The campaign starts on Easy; returning to Earth from Mars unlocks Medium, returning to Earth on Medium unlocks Hard, and returning to Earth on Hard unlocks endless Insane. The complete main campaign consists of **nine flights**. At each difficulty milestone, a landing/unlock overlay lets the player continue immediately from Earth with a full tank. Insane then repeats the same Earth → Moon → Mars → Earth loop indefinitely, starting from Earth.
 
-The campaign now introduces a **fourth, endless Insane difficulty** after Hard. Play Easy Earth → Moon → Mars to unlock Medium; Medium Mars → Moon → Earth to unlock Hard; Hard Earth → Moon → Mars to unlock Insane. In Insane, the flight sequence repeats Mars → Moon → Earth → Moon → Mars indefinitely. One wrong answer ends the run immediately. If fuel is depleted, the run also ends. Correct-answer points are 100 / 200 / 350 for Easy / Medium / Hard. Insane starts at 500 for the first correct answer and **multiplies the next correct-answer reward by 1.10** every time, across landings. Landing bonuses are additional 250 / 500 / 900 / 1500 points. The score is shown on-screen and in survival results.
+Every leg offers exactly **two possible answers**, ordered by the journey: **Earth / Moon**, **Moon / Mars**, or on the newly added direct return flight **Mars / Earth**. NASA question images come only from the corresponding two worlds; the built-in eligible pools have 42 / 44 / 46 images respectively. The same photo is not reused while eligible unused questions remain. Insane ends immediately after one wrong answer or fuel depletion. Correct answers earn 100 / 200 / 350 on Easy / Medium / Hard. Insane starts at 500 and increases the reward by **10% per consecutive correct answer**, including across landings. Landing bonuses are additional 250 / 500 / 900 / 1,500 points.
 
 These game rules are **arcade abstractions**, not actual NASA orbital dynamics or realistic propulsion calculations. The NASA dataset/image caveat from v1.7–v1.9 still applies: the automatically acquired catalog may contain unsuitable images even after metadata screening; visually audit any examples shown in the submission video and document the exact NASA records used.
 
 ---
 
-## Version 1.10 mission progression (current)
+## Version 1.10 mission progression (historical)
 
-The core campaign spans six journeys with one automatically advancing difficulty per pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard unlocks endless Insane survival mode. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. When recording the 30-second demonstration, show the Easy victory on Mars and automatic handoff to Medium.
+Version 1.10 introduced six journeys, with an automatic difficulty handoff after each pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard unlocks endless Insane survival mode. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. For the current v1.13 demonstration, show the **Mars → Earth** final Easy flight and the Medium unlock on Earth (not Mars).
 
 ## v1.9 NASA image quality
 
@@ -44,10 +44,10 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 ## Suggested 30-second demo storyboard
 
 - 0–5s: Title / choose difficulty (automated mission fuel profile)
-- 5–11s: NASA landscape identification (two choices on every leg; Earth/Moon or Moon/Mars)
+- 5–11s: NASA landscape identification (two choices on every leg; Earth/Moon, Moon/Mars or Mars/Earth)
 - 11–17s: ship moves, fuel meter drops, explanation and citation
 - 17–22s: moon landing, badge and refill
-- 22–27s: reach Mars on Easy, show Medium unlock and automatic continuation
+- 22–27s: show the Mars → Earth return, then Medium unlock on arriving home
 - 27–30s: project name, educational goal, public game URL
 
 ## AI acknowledgment suggested text
@@ -60,7 +60,7 @@ The game uses **fictional arcade progress and fuel units**. The difficulty prese
 
 ## Version 1.5 progression
 
-Historical v1.5: each difficulty originally required a four-leg round trip. **Current v1.10:** each difficulty lasts two legs, and progress automatically continues on the next difficulty (with a Continue button after the milestone). Progress saves locally using browser storage.
+Historical v1.5: each difficulty originally required a four-leg round trip. Historical v1.10–v1.12: each chapter had two legs and automatic progression at its final landing. **Current v1.13:** each difficulty lasts three legs and the next mode unlocks on returning to Earth, with a Continue dialog and locally saved unlock progress.
 
 
 ## Version 1.5 — more NASA images, fewer repeats
@@ -70,7 +70,7 @@ Historical v1.5: each difficulty originally required a four-leg round trip. **Cu
 - The same question is not intentionally repeated across the four flight legs until the eligible question catalog has been exhausted.
 - Recent image history is stored locally in the browser to reduce repeats between replay sessions on the same device. Clearing site data resets that history.
 - Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
-- Existing 2/3/3/2 answer choices, Easy→Medium→Hard progression, and all flight mechanics are unchanged.
+- Historical note: earlier releases used 2/3/3/2 choices; v1.13 uses two choices on every flight and adds Mars / Earth questions.
 
 ## Version 1.6 — question variety
 
