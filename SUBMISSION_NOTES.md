@@ -1,4 +1,6 @@
-## Current gameplay — Version 1.11
+## Current gameplay — Version 1.12
+
+All flights now display exactly **two possible worlds**. Earth ↔ Moon journeys ask **Earth or Moon**; Moon ↔ Mars journeys ask **Moon or Mars**. Question photos come exclusively from the two worlds for the current leg, including on endless Insane flights. This makes the game more intuitive and reduces guessing choices while preserving every other mechanic.
 
 The campaign now introduces a **fourth, endless Insane difficulty** after Hard. Play Easy Earth → Moon → Mars to unlock Medium; Medium Mars → Moon → Earth to unlock Hard; Hard Earth → Moon → Mars to unlock Insane. In Insane, the flight sequence repeats Mars → Moon → Earth → Moon → Mars indefinitely. One wrong answer ends the run immediately. If fuel is depleted, the run also ends. Correct-answer points are 100 / 200 / 350 for Easy / Medium / Hard. Insane starts at 500 for the first correct answer and **multiplies the next correct-answer reward by 1.10** every time, across landings. Landing bonuses are additional 250 / 500 / 900 / 1500 points. The score is shown on-screen and in survival results.
 
@@ -42,7 +44,7 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 ## Suggested 30-second demo storyboard
 
 - 0–5s: Title / choose difficulty (automated mission fuel profile)
-- 5–11s: NASA landscape identification (two choices on Earth–Moon legs, three on Moon–Mars legs)
+- 5–11s: NASA landscape identification (two choices on every leg; Earth/Moon or Moon/Mars)
 - 11–17s: ship moves, fuel meter drops, explanation and citation
 - 17–22s: moon landing, badge and refill
 - 22–27s: reach Mars on Easy, show Medium unlock and automatic continuation

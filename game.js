@@ -5,15 +5,15 @@ const $=id=>document.getElementById(id);
 // Insane begins on Mars and ends only after a wrong answer or running out of fuel.
 const LEGS=[
   {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'LUNAR APPROACH',subtitle:'Find the Moon among real NASA observations. Each correct decision brings you closer to the lunar base.',reward:'🌙 Lunar Navigator badge',message:'Moon Base Alpha: fuel tanks refilled. Next destination: Mars.'},
-  {from:'Moon',to:'Mars',options:['Earth','Moon','Mars'],name:'THE RED PLANET',subtitle:'Identify Earth, Moon or Mars terrain to steer toward the red planet through deep space.',reward:'🔴 Mars Pathfinder badge',message:'Mars reached! Easy mission cleared. Your next flight begins from Mars on Medium.'},
-  {from:'Mars',to:'Moon',options:['Earth','Moon','Mars'],name:'RETURN TO LUNAR ORBIT',subtitle:'The return journey tests whether you can distinguish Earth, Moon and Mars landscapes.',reward:'✨ Deep Space Voyager badge',message:'Lunar Base Alpha: fuel tanks refilled. Earth is waiting.'},
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'THE RED PLANET',subtitle:'Identify Moon or Mars terrain to steer toward the red planet through deep space.',reward:'🔴 Mars Pathfinder badge',message:'Mars reached! Easy mission cleared. Your next flight begins from Mars on Medium.'},
+  {from:'Mars',to:'Moon',options:['Mars','Moon'],name:'RETURN TO LUNAR ORBIT',subtitle:'The return journey tests whether you can distinguish Mars and Moon landscapes.',reward:'✨ Deep Space Voyager badge',message:'Lunar Base Alpha: fuel tanks refilled. Earth is waiting.'},
   {from:'Moon',to:'Earth',options:['Moon','Earth'],name:'MISSION HOME',subtitle:'Recognize Earth or Moon terrain and guide your spacecraft safely home.',reward:'🌍 Earth Return badge',message:'Earth reached! Medium mission cleared. The final expedition launches toward Mars on Hard.'},
   {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'FINAL LUNAR APPROACH',subtitle:'The Hard expedition starts on Earth. Identify Earth and Moon landscapes to reach the lunar base.',reward:'🚀 Elite Lunar Navigator badge',message:'Lunar Base Alpha: refueled for the final push to Mars.'},
-  {from:'Moon',to:'Mars',options:['Earth','Moon','Mars'],name:'FINAL MARS MISSION',subtitle:'Prove yourself on Hard! Reach Mars to unlock the endless Insane survival mode.',reward:'🏆 Hard Mode Champion trophy',message:'Hard complete! Endless Insane mode begins on Mars.'},
-  {from:'Mars',to:'Moon',options:['Earth','Moon','Mars'],name:'INSANE: LUNAR RETURN',subtitle:'One mistake ends the run. Identify each landscape to survive the journey from Mars to the Moon.',reward:'☄️ Insane Lunar Landing',message:'Insane run continues: next flight goes to Earth.'},
-  {from:'Moon',to:'Earth',options:['Earth','Moon'],name:'INSANE: EARTH LANDING',subtitle:'Trust your instincts. One wrong world means mission failure.',reward:'🌍 Insane Earth Landing',message:'You survived the return to Earth. Now launch again toward the Moon.'},
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'FINAL MARS MISSION',subtitle:'Prove yourself on Hard! Reach Mars to unlock the endless Insane survival mode.',reward:'🏆 Hard Mode Champion trophy',message:'Hard complete! Endless Insane mode begins on Mars.'},
+  {from:'Mars',to:'Moon',options:['Mars','Moon'],name:'INSANE: LUNAR RETURN',subtitle:'One mistake ends the run. Identify each landscape to survive the journey from Mars to the Moon.',reward:'☄️ Insane Lunar Landing',message:'Insane run continues: next flight goes to Earth.'},
+  {from:'Moon',to:'Earth',options:['Moon','Earth'],name:'INSANE: EARTH LANDING',subtitle:'Trust your instincts. One wrong world means mission failure.',reward:'🌍 Insane Earth Landing',message:'You survived the return to Earth. Now launch again toward the Moon.'},
   {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'INSANE: LUNAR APPROACH',subtitle:'The survival loop continues. No mistakes allowed!',reward:'🌕 Insane Lunar Landing',message:'Refuel and head toward Mars.'},
-  {from:'Moon',to:'Mars',options:['Earth','Moon','Mars'],name:'INSANE: MARS LANDING',subtitle:'Identify Earth, Moon or Mars to survive the trip to the red planet.',reward:'🔴 Insane Mars Landing',message:'Welcome back to Mars. Next leg begins the loop again.'}
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'INSANE: MARS LANDING',subtitle:'Identify Moon or Mars to survive the trip to the red planet.',reward:'🔴 Insane Mars Landing',message:'Welcome back to Mars. Next leg begins the loop again.'}
 ];
 const INSANE_START_LEG=6;
 const INSANE_LEG_COUNT=4;
@@ -245,7 +245,7 @@ $('nextQuestion').addEventListener('click',nextStep);
 $('soundToggle').addEventListener('click',()=>{state.sound=!state.sound;$('soundToggle').textContent=state.sound?'♪':'♩';$('soundToggle').setAttribute('aria-label',state.sound?'Mute sounds':'Unmute sounds')});
 $('helpToggle').addEventListener('click',()=>$('helpOverlay').classList.remove('hidden'));
 $('closeHelp').addEventListener('click',()=>$('helpOverlay').classList.add('hidden'));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('helpOverlay').classList.add('hidden');return}if(state.status==='quiz'&&['1','2','3'].includes(e.key)){const i=Number(e.key)-1;const choice=currentLeg()?.options[i];const b=$('answerButtons').children[i];if(choice&&b)answer(choice,b)}else if(state.status==='answer'&&e.key==='Enter')nextStep()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('helpOverlay').classList.add('hidden');return}if(state.status==='quiz'&&['1','2'].includes(e.key)){const i=Number(e.key)-1;const choice=currentLeg()?.options[i];const b=$('answerButtons').children[i];if(choice&&b)answer(choice,b)}else if(state.status==='answer'&&e.key==='Enter')nextStep()});
 window.addEventListener('resize',drawStars);
 resetGame();drawStars();
 if(typeof expandNasaQuestionLibrary==='function'&&typeof fetch==='function') {

@@ -1,6 +1,8 @@
-# Planet Impostor: Mission Home — v1.11
+# Planet Impostor: Mission Home — v1.12
 
-**What's new:** The campaign now unlocks an **endless Insane survival mode** when you reach Mars on Hard. Insane loops Mars → Moon → Earth → Moon → Mars and repeats until you lose. A single wrong answer ends the Insane run immediately; fuel depletion also ends it. Correct answers earn **100 (Easy), 200 (Medium), 350 (Hard)** and on Insane **500 × 1.10^(n−1)** points on the nth consecutive correct answer. The exponent continues across all Insane landings. Landing bonuses also scale by difficulty (250 / 500 / 900 / 1,500 points). An on-screen prompt shows the next potential award and the final dialog shows the survival score. Points grow without a predetermined round limit. Unlocked modes are saved locally, including prior v1.10 Hard unlocks.
+**Version 1.12 — two answers per flight:** Earth ↔ Moon journeys offer **Earth / Moon** and Moon ↔ Mars journeys offer **Moon / Mars**, ordered to match the departure and destination. There is no Earth option or Earth photo on Moon ↔ Mars flights. All four difficulties (including endless Insane) use the same rule. The no-repeat cycle still prevents repeated eligible images: **42 curated Earth/Moon images** or **44 curated Moon/Mars images** before each corresponding pool resets. The expanding online catalog adds more eligible NASA photos when available. No changes were made to fuel, rewards, progression, or NASA photo screening.
+
+**Previously in v1.11:** The campaign now unlocks an **endless Insane survival mode** when you reach Mars on Hard. Insane loops Mars → Moon → Earth → Moon → Mars and repeats until you lose. A single wrong answer ends the Insane run immediately; fuel depletion also ends it. Correct answers earn **100 (Easy), 200 (Medium), 350 (Hard)** and on Insane **500 × 1.10^(n−1)** points on the nth consecutive correct answer. The exponent continues across all Insane landings. Landing bonuses also scale by difficulty (250 / 500 / 900 / 1,500 points). An on-screen prompt shows the next potential award and the final dialog shows the survival score. Points grow without a predetermined round limit. Unlocked modes are saved locally, including prior v1.10 Hard unlocks.
 
 **Quick tests:** `node test-game.js` and `node test-catalog.js`. The first checks campaign unlocks, looping Insane journeys, score growth, immediate failure on a wrong answer, and preserved no-repeat image cycling. The second simulates NASA archive responses and screening; it does not validate every remote image visually. For a real NASA image check, load the website online and inspect the returned photos.
 
@@ -42,10 +44,10 @@ The live NASA image catalog now requires evidence that an image actually **depic
 
 - 66 curated NASA observations: 22 Earth, 20 Moon, 24 Mars (previously 23 total).
 - Includes deserts, volcanic fields, glacial landscapes, polar craters, lunar ridges, Martian ice, and rover panoramas.
-- An image is **never repeated** while there is an unused image eligible for the current flight leg. A leg with Earth/Moon choices cycles through 42 photos; a leg with Earth/Moon/Mars choices cycles through all 66. If that leg exhausts its eligible pool, it begins a fresh cycle of those photos.
+- An image is **never repeated** while there is an unused image eligible for the current flight leg. A leg with Earth/Moon choices cycles through 42 curated photos; a leg with Moon/Mars choices cycles through 44 curated photos. If that leg exhausts its eligible pool, it begins a fresh cycle of those photos.
 - The complete used-photo cycle is saved in the browser across journeys, game restarts, and page reloads. This version carries forward the recent photo history saved by v1.5 where available. Clearing site data resets that history.
 - Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
-- Historical v1.6: the 2/3/3/2 answer-choice pattern was unchanged. Version 1.10 extends it to 2/3/3/2/2/3 for six flights.
+- Historical v1.6 used the 2/3/3/2 pattern. Version 1.12 uses two choices on every flight, including the endless Insane loop.
 
 
 **Reunia Space AI | NASA Space Apps Challenge 2026**
@@ -72,7 +74,7 @@ The game HTML, CSS, JS and data catalog work locally. **Real NASA question image
 2. On **Medium**, travel Mars → Moon → Earth. Reaching Earth unlocks Hard and automatically changes the mission to Hard.
 3. On **Hard**, travel Earth → Moon → Mars. Reaching Mars unlocks **Insane** and automatically continues after the landing dialog.
 4. On **Insane**, repeat Mars → Moon → Earth → Moon → Mars indefinitely. Every wrong answer immediately ends the run; so does running out of fuel. Correct-answer points escalate by 10% per correct answer (500, 550, 605, 666, ...), and the running multiplier does **not** reset at each landing.
-5. Earth ↔ Moon journeys offer **Earth / Moon** choices. Moon ↔ Mars journeys offer **Earth / Moon / Mars** choices. Keyboard keys 1, 2, and 3 (where relevant) work as before.
+5. Earth ↔ Moon journeys offer **Earth / Moon** choices. Moon ↔ Mars journeys offer **Moon / Mars** choices (in travel order). Keyboard keys **1 and 2** select the answer.
 6. Correct guesses move the ship forward; wrong guesses move it backward. Every guess costs fuel. Land to refuel; running out of fuel before arrival loses that flight. Reach 100% on the same answer that depletes fuel and the arrival counts as a win.
 7. The game remembers which NASA images the player has seen and avoids repeats while unused eligible images remain. It also remembers unlocked difficulties across page reloads.
 8. Previously unlocked difficulties remain selectable in the starting menu for replay. Starting directly on Medium begins at **Mars**; starting directly on Hard begins at **Earth**; starting directly on Insane begins at **Mars**.
@@ -126,7 +128,7 @@ This is a web app packaged like a phone game; it is **not yet** an App Store or 
 
 ## Version 1.5
 
-Current progression (v1.11): Easy Earth → Moon → Mars unlocks Medium; Medium Mars → Moon → Earth unlocks Hard; Hard Earth → Moon → Mars unlocks endless Insane. Difficulty switches automatically after each two-flight chapter. Locked modes remain disabled in the setup menu for new players.
+Current progression (v1.12): Easy Earth → Moon → Mars unlocks Medium; Medium Mars → Moon → Earth unlocks Hard; Hard Earth → Moon → Mars unlocks endless Insane. Difficulty switches automatically after each two-flight chapter. Locked modes remain disabled in the setup menu for new players.
 
 ## Version 1.6 — persistent, strict no-repeat photo cycles
 
