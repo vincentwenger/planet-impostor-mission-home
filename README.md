@@ -1,5 +1,17 @@
 # Planet Impostor: Mission Home
 
+## Version 1.7 — NASA image library expansion toward 170 observations
+
+**Target: 170 different NASA image records (60 Earth / 50 Moon / 60 Mars).** The 66 individually curated NASA Photojournal records are included immediately. When the game runs online, it searches the official NASA Image and Video Library API for up to **104 additional distinct photo records**, filters out illustrations/diagrams/non-terrain material, and caches the approved metadata in the browser. The actual number depends on NASA API availability and search results; only the 66 included records are guaranteed when offline. The setup screen reports the number currently available.
+
+- No new game rules or controls: the four-leg quiz, fuel, difficulty unlocking, and no-repeat cycles remain unchanged.
+- New records retain their NASA ID, original NASA Images page, NASA credit, and science caption.
+- On the first online visit, the catalog expands in the background; the game is playable immediately. Later visits restore the expanded catalog from localStorage.
+- NASA photos are not bundled in the ZIP; they are loaded from official NASA servers. If a remote image cannot load, the existing labeled fallback is shown.
+- Static code checks: `node test-game.js` and `node test-catalog.js`. The second test simulates a 170-record NASA API response and offline failures; it does **not** prove every remote image can be fetched.
+
+**NASA API documentation:** https://api.nasa.gov/ (NASA Image and Video Library) and https://images-api.nasa.gov/ .
+
 ## Version 1.6 — exhaust every available photo before repeating
 
 - 66 curated NASA observations: 22 Earth, 20 Moon, 24 Mars (previously 23 total).
@@ -40,7 +52,7 @@ Fuel usage and movement are **simplified arcade mechanics**, not actual orbital 
 
 ## NASA sources
 
-See [`NASA_SOURCES.md`](NASA_SOURCES.md) for every image, instrument, mission, image ID, description and credit. The question bank contains **66 curated NASA Photojournal entries**: 22 Earth, 20 Moon, 24 Mars. The labels are based on NASA's target fields and descriptions.
+See [`NASA_SOURCES.md`](NASA_SOURCES.md) for every image, instrument, mission, image ID, description and credit. The built-in question bank contains **66 curated NASA Photojournal entries**: 22 Earth, 20 Moon, 24 Mars. The online library can grow toward 170 with NASA Image and Video Library photo records; all records include an original NASA source link. The labels are based on NASA's target fields and descriptions.
 
 The image display uses an image delivery URL pattern from NASA Science assets; if NASA later changes it, use each record's linked NASA Photojournal page to obtain updated image URLs.
 
@@ -49,7 +61,7 @@ The image display uses an image delivery URL pattern from NASA Science assets; i
 - `index.html`: screens and UI
 - `style.css`: responsive styling, space scene, spacecraft, planets and HUD
 - `game.js`: gameplay state and mission logic
-- `data.js`: original curated question catalog referencing official NASA sources
+- `data.js`: curated NASA sources plus online NASA image library expansion (v1.7)
 - `NASA_SOURCES.md`: full image credits and source links
 - `SUBMISSION_NOTES.md`: submission checklist and AI-use disclosure guidance
 
@@ -65,7 +77,7 @@ Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the
 
 ## Known limitations
 
-- Live NASA asset requests are needed for full photo gameplay and cannot be tested without network access; try the game in your browser and verify each photo loads before submitting.
+- Live NASA asset requests are needed for full photo gameplay and cannot be tested without network access; try the game in your browser and verify each photo loads before submitting. The online library expansion may not hit 170 if NASA search results are insufficient or the API is blocked; the 66 built-in records remain available.
 - NASA Photojournal entries can include false/enhanced color, orbital views, and rover close-ups. These differences may hint at the answer. Enhanced-color entries are identified after the reveal.
 - Answers are randomized from the worlds available on each flight leg. The game will only reuse a photo when every image eligible for the current leg has already appeared in that leg’s persistent used-photo cycle.
 - No backend, accounts, multiplayer or persistent global leaderboard. Difficulty unlocks are stored locally in the browser, not synced between devices; clearing site data can reset them.

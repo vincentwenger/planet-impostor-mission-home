@@ -1,10 +1,19 @@
-# NASA image sources — Planet Impostor v1.5
+# NASA image sources — Planet Impostor v1.7
 
 The game uses **real NASA spacecraft and Earth-observation images as question content**, not decorative art. Each result links to its original NASA Science/Photojournal record and lists the spacecraft/instrument and credit. All external photographs remain hosted by NASA; an internet connection is required. The game does not download or include the imagery in the ZIP.
 
 Some orbital images are **enhanced-color, radar-derived, or false-color**; such observations should not be mistaken for natural-color human-eye photographs. Image processing metadata should be read on the linked NASA source page. The flight and fuel gameplay mechanics are simplified arcade rules, not real orbital calculations.
 
 Photo records added in v1.5 were sourced from NASA Earth/planetary galleries and NASA Science Lunar Resources; links refer to the official image pages.
+
+## Version 1.7 — additional NASA Image and Video Library records
+
+In addition to the **66 hand-curated records listed below**, the game uses NASA’s public [Image and Video Library search API](https://api.nasa.gov/) to discover other observational photographs during online play. This is an official NASA media archive, distinct from NASA Photojournal. The game aims for **170 total records** (60 Earth, 50 Moon and 60 Mars), but the actual count depends on search results and availability and is shown on the game setup screen. We **do not claim** all 104 extras are present when offline or that all remote image URLs have been manually checked in this environment.
+
+Each dynamically acquired question stores the **NASA image asset ID**, the NASA Images source page (`https://images.nasa.gov/details/<asset-id>`), the original title/description, mission/creator when available, and the public preview image URL. The metadata is cached in localStorage. The source link is shown after answering, as with the original questions. Artist concepts, diagrams and hardware photos are filtered from search results. Users can inspect each source for color processing and usage notes. New records are not reproduced in this static table because NASA’s search results may vary across sessions.
+
+Searches focus on Terra/ASTER, Landsat, lunar surface/LRO/Apollo, and Mars imagery from HiRISE, Curiosity, Perseverance and Mars Odyssey. Official API documentation: https://api.nasa.gov/ and https://images.nasa.gov/docs/images.nasa.gov_api_docs.pdf .
+
 
 | World | NASA image | Mission/instrument | Image credit | NASA source |
 |---|---|---|---|---|

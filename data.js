@@ -84,3 +84,141 @@ NASA_QUESTIONS.forEach(q=>{
   q.image=`https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/${n.slice(0,5)}/${n}/${q.id}.jpg?crop=faces%2Cfocalpoint&fit=crop&w=1100&h=800`;
   q.source=`https://science.nasa.gov/photojournal/${q.slug}/`;
 });
+
+
+// V1.7: expand the hand-curated 66-record Photojournal catalog with additional
+// distinct, source-linked images returned by NASA's public Image and Video Library.
+// NASA API: https://images-api.nasa.gov/search (no API key required).
+// This is progressive enhancement: the original game works if the API is offline.
+// Search metadata is filtered to avoid diagrams, artistic renderings and launch photos.
+const NASA_IMAGE_TARGETS = Object.freeze({Earth:60,Moon:50,Mars:60});
+const NASA_IMAGE_LIBRARY_CACHE_KEY = 'planet-impostor-nasa-library-v1.7';
+const NASA_IMAGE_QUERIES = Object.freeze({
+  Earth: [
+    'Terra ASTER volcano', 'Terra ASTER desert', 'NASA satellite glacier landscape',
+    'NASA satellite coastal landscape', 'Earth satellite mountains',
+    'NASA satellite salt flats', 'NASA Earth Observatory canyon', 'Earth Landsat terrain',
+    {term:'Earth surface',page:1},{term:'Earth surface',page:2},
+    {term:'Landsat',page:1},{term:'Terra',page:2}
+  ],
+  Moon: [
+    'Lunar Reconnaissance Orbiter crater', 'LRO lunar surface',
+    'Moon lunar terrain', 'Apollo lunar landscape', 'lunar highlands',
+    'lunar south pole terrain', 'Lunar Reconnaissance Orbiter ridges', 'lunar regolith boulders',
+    {term:'Moon surface',page:1},{term:'Moon surface',page:2},
+    {term:'Apollo lunar',page:2},{term:'Lunar Reconnaissance Orbiter',page:2}
+  ],
+  Mars: [
+    'Mars Reconnaissance Orbiter dunes', 'Mars HiRISE crater',
+    'Curiosity Mars landscape', 'Perseverance Mars landscape',
+    'Mars rover rocky terrain', 'Martian polar terrain',
+    'Mars rover panorama', 'Mars Odyssey Martian terrain',
+    {term:'Mars surface',page:1},{term:'Mars surface',page:2},
+    {term:'Mars crater',page:2},{term:'Martian landscape',page:3}
+  ]
+});
+const NASA_LIBRARY_BLOCKED = /\b(artist.?s? (concept|rendition|illustration)|illustration|rendering|animation|diagram|graph|chart|logo|patch|poster|map legend|mission control|launch vehicle|spacecraft assembly|model testing|mockup|computer simulation|selfie|team portrait|microscope|wind tunnel|test stand)\b/i;
+const NASA_LIBRARY_TERRAIN = /\b(surface|terrain|landscape|dune|crater|volcano|volcanic|rock|ridge|canyon|glacier|desert|cliff|mountain|ice|plain|basin|lava|lake|coast|island|valley|regolith|mare|highland|slope|outcrop|erosion|sediment|dust|sand|geolog|satellite|orbiter|panorama|polar|earth observatory|ASTER|Landsat|HiRISE|Mastcam)\b/i;
+const NASA_LIBRARY_BODY = {
+  Earth: /\b(earth|terrestrial|landsat|terra satellite|aster|our planet)\b/i,
+  Moon: /\b(moon|lunar|lro|apollo)\b/i,
+  Mars: /\b(mars|martian|curiosity|perseverance|hirise)\b/i
+};
+function nasaCountByWorld(){return Object.fromEntries(Object.keys(NASA_IMAGE_TARGETS).map(w=>[w,NASA_QUESTIONS.filter(q=>q.world===w).length]));}
+function sanitizeNasaCopy(s,max=260){return String(s||'').replace(/<[^>]+>/g,' ').replace(/&(?:nbsp|amp|quot|lt|gt);/gi,m=>({'&nbsp;':' ','&amp;':'&','&quot;':'"','&lt;':'<','&gt;':'>'}[m.toLowerCase()]||m)).replace(/\s+/g,' ').trim().slice(0,max);}
+function nasaAssetToQuestion(item,world){
+  const d=item?.data?.[0];
+  const identifier=String(d?.nasa_id||'').trim();
+  const title=sanitizeNasaCopy(d?.title,110);
+  const description=sanitizeNasaCopy(d?.description||d?.description_508,800);
+  const text=title+' '+description;
+  if(!identifier||!title||!description||!NASA_LIBRARY_BODY[world].test(text))return null;
+  if(NASA_LIBRARY_BLOCKED.test(title)||!NASA_LIBRARY_TERRAIN.test(text))return null;
+  // These searches are intentionally terrain-oriented; photos of hardware or crews
+  // are rejected even if a planet name occurs in their captions.
+  if(/\b(crew|astronaut|launch|rocket|space shuttle|mission patch|prototype|instrument testing|solar array|flight hardware|spacecraft model)\b/i.test(title))return null;
+  if(world==='Moon'&&/\b(Mars rover|Martian|Jupiter|Saturn|Earthrise|Earthset)\b/i.test(title))return null;
+  if(world==='Mars'&&/\b(Moon landing|Earth satellite|lunar surface)\b/i.test(title))return null;
+  if(world==='Earth'&&/\b(Martian|Mars rover|lunar surface|Moon surface|artist)\b/i.test(title))return null;
+  const link=(item.links||[]).find(x=>x?.href&&x?.rel==='preview'&&/^https:\/\//.test(x.href))||
+    (item.links||[]).find(x=>x?.href&&/^https:\/\//.test(x.href)&&/\.(jpe?g|png|webp)(\?|$)/i.test(x.href));
+  if(!link)return null;
+  const image=link.href;
+  if(!/\.(jpe?g|png|webp)(\?|$)/i.test(image))return null;
+  const id='NASA-LIB-'+identifier;
+  const firstSentence=description.split(/(?<=[.!?])\s+(?=[A-Z])/)[0]||description;
+  const fact=sanitizeNasaCopy(firstSentence,240)||`NASA captured this ${world} observation.`;
+  return {id,world,name:title,region:sanitizeNasaCopy(d.location,80)||`${world} terrain`,
+    mission:sanitizeNasaCopy(d.secondary_creator||d.photographer||d.center||'NASA Image and Video Library',95),
+    credit:sanitizeNasaCopy(d.secondary_creator||d.photographer||'NASA Image and Video Library',95),
+    image,source:'https://images.nasa.gov/details/'+encodeURIComponent(identifier),fact,
+    catalog:'NASA Image and Video Library'};
+}
+function loadCachedNasaLibrary(){
+  try{
+    const cache=JSON.parse(localStorage.getItem(NASA_IMAGE_LIBRARY_CACHE_KEY)||'[]');
+    if(!Array.isArray(cache))return 0;
+    const existing=new Set(NASA_QUESTIONS.map(q=>q.id));
+    let n=0;
+    for(const q of cache){
+      if(!q||!NASA_IMAGE_TARGETS[q.world]||typeof q.id!=='string'||!q.id.startsWith('NASA-LIB-')||
+          !/^https:\/\//.test(q.image||'')||!/^https:\/\/images\.nasa\.gov\//.test(q.source||'')||existing.has(q.id))continue;
+      if(NASA_QUESTIONS.filter(x=>x.world===q.world).length>=NASA_IMAGE_TARGETS[q.world])continue;
+      NASA_QUESTIONS.push(q);existing.add(q.id);n++;
+    }
+    return n;
+  }catch{return 0;}
+}
+function persistNasaLibrary(){
+  try{localStorage.setItem(NASA_IMAGE_LIBRARY_CACHE_KEY,
+    JSON.stringify(NASA_QUESTIONS.filter(q=>q.catalog==='NASA Image and Video Library')));
+  }catch{}
+}
+// Keep this non-blocking. Game can start immediately with the curated 66 images;
+// the browser adds more NASA observations in the background as results arrive.
+async function expandNasaQuestionLibrary({fetcher,targets,searches}={}){
+  const useFetch=fetcher||(typeof fetch==='function'?fetch:null);
+  if(!useFetch)return nasaCountByWorld();
+  const goals=targets||NASA_IMAGE_TARGETS;
+  const searchTerms=searches||NASA_IMAGE_QUERIES;
+  const existing=new Set(NASA_QUESTIONS.map(q=>q.id));
+  async function retrieve(world,search){
+    if(NASA_QUESTIONS.filter(q=>q.world===world).length>=goals[world])return;
+    const term=typeof search==='string'?search:search.term;
+    const page=typeof search==='string'?1:search.page;
+    const url='https://images-api.nasa.gov/search?q='+encodeURIComponent(term)+'&media_type=image&page_size=100&page='+page;
+    let controller=null,timer=null;
+    try{
+      if(typeof AbortController==='function'){
+        controller=new AbortController();
+        if(typeof setTimeout==='function')timer=setTimeout(()=>controller.abort(),12000);
+      }
+      const response=await useFetch(url,controller?{signal:controller.signal}:undefined);
+      if(!response||!response.ok)return;
+      const data=await response.json();
+      const options=(data?.collection?.items||[]).map(item=>nasaAssetToQuestion(item,world)).filter(Boolean);
+      for(let i=options.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[options[i],options[j]]=[options[j],options[i]];}
+      for(const q of options){
+        if(existing.has(q.id))continue;
+        if(NASA_QUESTIONS.filter(p=>p.world===world).length>=goals[world])break;
+        NASA_QUESTIONS.push(q);existing.add(q.id);
+      }
+      persistNasaLibrary();
+    }catch{/* Network, CORS and HTTP errors never block gameplay. */}
+    finally{if(timer!==null)clearTimeout(timer);}
+  }
+  // First scan several independent terrain searches for each world; then try the
+  // remaining search phrases only where a world is still below its target.
+  for(let step=0;step<12;step++){
+    const jobs=[];
+    for(const world of ['Earth','Moon','Mars']){
+      if(NASA_QUESTIONS.filter(q=>q.world===world).length>=goals[world])continue;
+      if(searchTerms[world]?.[step])jobs.push(retrieve(world,searchTerms[world][step]));
+    }
+    if(!jobs.length)break;
+    await Promise.all(jobs);
+  }
+  return nasaCountByWorld();
+}
+// Restore metadata from a previous online play session without another fetch.
+if(typeof localStorage!=='undefined')loadCachedNasaLibrary();

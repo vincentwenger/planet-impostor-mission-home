@@ -1,3 +1,7 @@
+## Version 1.7 NASA media note
+
+The game includes 66 manually curated NASA Photojournal images and can discover additional NASA Images archive photographs, targeting 170 total (60 Earth, 50 Moon, 60 Mars) when online. The on-screen count is the current source of truth. Do not claim 170 verified/loaded images until an actual browser session shows 170 and all images have been checked. Each question links back to its original NASA image or Photojournal page. NASA API access can be unavailable in some environments. The catalog uses NASA source observations, not AI-generated photographs.
+
 # NASA Space Apps 2026 Submission Checklist
 
 Keep the submission in **Save Progress** status while building. Do not click **Submit for Judging** until the project links, demo and acknowledgments are final.

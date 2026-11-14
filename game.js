@@ -132,3 +132,10 @@ $('closeHelp').addEventListener('click',()=>$('helpOverlay').classList.add('hidd
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('helpOverlay').classList.add('hidden');return}if(state.status==='quiz'&&['1','2','3'].includes(e.key)){const i=Number(e.key)-1;const choice=LEGS[state.leg]?.options[i];const b=$('answerButtons').children[i];if(choice&&b)answer(choice,b)}else if(state.status==='answer'&&e.key==='Enter')nextStep()});
 window.addEventListener('resize',drawStars);
 resetGame();drawStars();
+if(typeof expandNasaQuestionLibrary==='function'&&typeof fetch==='function') {
+  expandNasaQuestionLibrary().then(counts=>{
+    console.info('Planet Impostor NASA image catalog:',counts,'total',NASA_QUESTIONS.length);
+    const note=$('nasaLibraryStatus');
+    if(note)note.textContent=`NASA image library: ${NASA_QUESTIONS.length} / 170 available` ;
+  }).catch(()=>{});
+}
