@@ -21,7 +21,7 @@ The game HTML, CSS, JS and data catalog work locally. **Real NASA question image
 ## Gameplay
 
 1. Choose **Easy**, **Medium** or **Hard**. Each mode automatically sets your fuel capacity and how far each correct/wrong answer moves your ship.
-4. Answer actual NASA terrain questions in each of four legs.
+2. Answer NASA terrain questions over four legs. Earth → Moon and Moon → Earth offer **Earth / Moon** (two choices); Moon → Mars and Mars → Moon offer **Earth / Moon / Mars** (three choices). Keyboard keys 1, 2 and (when available) 3 also work.
 3. Correct guesses move you closer and consume fuel. Wrong guesses move you backward and consume more fuel. Reach 100% to land; run out of fuel before arriving and you fail. If arrival and fuel exhaustion happen on the same answer, arriving wins.
 4. Read a science explanation and open the original source after each answer.
 5. Refuel and earn a mission badge at each stop; win on Earth.
@@ -57,7 +57,7 @@ Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the
 
 - Live NASA asset requests are needed for full photo gameplay and cannot be tested without network access; try the game in your browser and verify each photo loads before submitting.
 - NASA Photojournal entries can include false/enhanced color, orbital views, and rover close-ups. These differences may hint at the answer. Enhanced-color entries are identified after the reveal.
-- Answers are randomized. The game may reuse some photos on later legs when a question deck has been exhausted.
+- Answers are randomized from the worlds available on each flight leg. The game may reuse some photos on later legs when a question deck has been exhausted.
 - No backend, accounts, multiplayer or persistent global leaderboard.
 - The current mission simulator is arcade-style; judging under **Space Mission Design Game** must clearly explain that the simplified fuel/speed profiles are arcade abstractions, not real mission design calculations. The fit with the official challenge should be evaluated carefully.
 

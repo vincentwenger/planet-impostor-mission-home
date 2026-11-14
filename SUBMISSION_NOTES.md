@@ -18,7 +18,7 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 ## Suggested 30-second demo storyboard
 
 - 0–5s: Title / choose difficulty (automated mission fuel profile)
-- 5–11s: NASA landscape identification
+- 5–11s: NASA landscape identification (two choices on Earth–Moon legs, three on Moon–Mars legs)
 - 11–17s: ship moves, fuel meter drops, explanation and citation
 - 17–22s: moon landing, badge and refill
 - 22–27s: show Mars leg and return-to-Earth map

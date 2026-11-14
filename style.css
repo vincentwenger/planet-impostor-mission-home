@@ -52,3 +52,15 @@ body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inse
   .pick-card{padding:9px 5px}
   .pick-card strong{font-size:10px}
 }
+
+/* Stage-specific quiz controls: three answers on Moon ↔ Mars flights only. */
+.answer-buttons.three-choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.hint-badge.three-worlds{letter-spacing:0;line-height:1.45}
+@media(max-width:660px){
+  .answer-buttons.three-choices{gap:6px}
+  .answer-buttons.three-choices .answer-option{min-width:0;padding:12px 4px;font-size:12px;letter-spacing:.015em}
+  .hint-badge.three-worlds{font-size:9px;max-width:126px}
+}
+@media(max-width:360px){
+  .answer-buttons.three-choices .answer-option{font-size:11px;padding:12px 2px}
+}

@@ -9,7 +9,7 @@ class Node{
  setAttribute(k,v){this.attributes[k]=v}
  getContext(){return{scale(){},clearRect(){},beginPath(){},arc(){},fill(){},set fillStyle(x) {}}}
 }
-const nodes={};const get=id=>nodes[id]||(nodes[id]=new Node(id));const doc={getElementById:get,createElement:()=>new Node(),addEventListener() {}};
+const nodes={};const get=id=>nodes[id]||(nodes[id]=new Node(id));const doc={listeners:{},getElementById:get,createElement:()=>new Node(),addEventListener(event,fn){this.listeners[event]=fn}};
 const ctx={document:doc,window:{innerWidth:1366,innerHeight:900,addEventListener(){},AudioContext:class{constructor(){this.currentTime=0;this.destination={}}createOscillator(){return{frequency:{value:0},connect(){return{connect(){}}},start(){},stop(){}}}createGain(){return{gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}}}}},devicePixelRatio:1,sessionStorage:{setItem(){}},Math,setTimeout:(fn)=>fn(),console};ctx.global=ctx;vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(__dirname+'/data.js','utf8'),ctx);
 vm.runInContext(fs.readFileSync(__dirname+'/game.js','utf8'),ctx);
@@ -26,6 +26,11 @@ get('launchButton').click();assert.equal(state.leg,0);assert.equal(state.status,
 for(let leg=0;leg<4;leg++){
  assert.equal(state.leg,leg);assert.equal(state.status,'quiz');
  const opts=vm.runInContext('LEGS[state.leg].options',ctx);assert(opts.includes(state.question.world));
+ const expected=leg===0?['Earth','Moon']:leg===3?['Moon','Earth']:['Earth','Moon','Mars'];
+ assert.deepEqual([...opts],expected,`leg ${leg+1} option set`);
+ assert.equal(get('answerButtons').children.length,expected.length,`leg ${leg+1} answer button count`);
+ assert.equal(get('answerButtons').classList.contains('three-choices'),expected.length===3);
+ assert(expected.every((world,i)=>get('answerButtons').children[i].textContent.includes(world.toUpperCase())));
  state.progress=92;state.fuel=80;
  const q=state.question;const selected=get('answerButtons').children[opts.indexOf(q.world)];
  vm.runInContext(`answer(${JSON.stringify(q.world)},document.getElementById('answerButtons').children[${opts.indexOf(q.world)}])`,ctx);
@@ -34,7 +39,22 @@ for(let leg=0;leg<4;leg++){
  if(leg<3){assert.equal(state.status,'landing');get('dialogButton').click();assert.equal(state.leg,leg+1);assert.equal(state.status,'quiz')}
  else{assert.equal(state.status,'landing');assert(get('dialogTitle').textContent.includes('Welcome home'));get('dialogButton').click();assert.equal(state.status,'setup')}
 }
+// Keyboard shortcut 3 must select Mars on the two three-world legs.
+for (const legIndex of [1,2]) {
+ vm.runInContext(`startLeg(${legIndex})`,ctx);
+ state.question=qbank.find(q=>q.world==='Mars');
+ assert.equal(state.status,'quiz');
+ assert.equal(get('answerButtons').children.length,3);
+ doc.listeners.keydown({key:'3'});
+ assert.equal(state.status,'answer');
+ assert.equal(state.correct>0,true);
+}
+// Keyboard shortcut 3 must not trigger an answer on the two-choice Earth–Moon leg.
+vm.runInContext('startLeg(0)',ctx);
+doc.listeners.keydown({key:'3'});
+assert.equal(state.status,'quiz');
+vm.runInContext('resetGame()',ctx);
 get('launchButton').click();state.fuel=1;state.progress=0;const wrong=state.question.world==='Earth'?'Moon':'Earth';
 vm.runInContext(`answer(${JSON.stringify(wrong)},document.getElementById('answerButtons').children[0])`,ctx);
 get('nextQuestion').click();assert.equal(state.status,'failed');
-console.log('PASS — difficulty presets; 23 source records; 4 legs; landing and refuel; victory; fuel-failure path.');
+console.log('PASS — 2/3/3/2 answer options; keyboard key 3; difficulty presets; 23 NASA records; 4 legs; landing/refuel; victory; fuel failure.');
