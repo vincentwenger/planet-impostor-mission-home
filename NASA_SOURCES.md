@@ -1,3 +1,5 @@
+> **v1.9 photo-quality policy:** NASA automatic Image and Video Library records are admitted only when the metadata identifies a genuine geological feature and relevant surface-imaging camera. Crew and cabin photographs, lunar plaques, launches, and mission memorabilia are excluded even when they mention the Moon. Historic bad records `AS17-145-22224` and `S71-39357` are explicitly rejected. The 66 curated records below remain available; the expanded catalog count may be below the 170 target.
+
 ## Important NASA Image Library filtering update (v1.8)
 
 The source-linked 66 curated Photojournal entries remain the offline baseline. Additional images from NASA's Image and Video Library API are **screened by terrain title, surface-observing camera/instrument, and exclusions for launches, facilities, hardware and cross-world references**. This is necessary because a caption about a lunar *mission* does not imply a photograph of the Moon. For example, NASA image `KSC-2009-3781` shows a rocket launching **from Cape Canaveral, Florida** and is not a Moon terrain question. Old automatically classified v1.7 cache entries are not reused.

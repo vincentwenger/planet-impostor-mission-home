@@ -1,4 +1,4 @@
-// Deterministic regression tests for the v1.8 NASA Image and Video Library expansion.
+// Deterministic regression tests for the v1.9 NASA Image and Video Library terrain-only expansion.
 // These mock NASA's API; they cannot prove NASA's live service returns enough images.
 const fs=require('fs'), vm=require('vm'), assert=require('assert');
 const text=fs.readFileSync(__dirname+'/data.js','utf8');
@@ -48,6 +48,30 @@ function fakeFetch(url){
    links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/KSC-2009-3781/KSC-2009-3781~thumb.jpg'}]};
  assert.equal(classify(ksc,'Moon'),null,'Cape Canaveral rocket launch must NEVER count as Moon terrain');
  assert.equal(classify(ksc,'Earth'),null,'rocket launch is not eligible Earth landscape quiz imagery');
+ // Regression: the user's two real screenshots were classified as "Moon":
+ // Apollo 17 astronaut in a lunar module and an Apollo 15 commemorative plaque.
+ // Neither is a terrain photograph; both must be rejected for all three worlds.
+ const nonTerrainApollo=[
+   {data:[{nasa_id:'AS17-145-22224', title:'Astronaut Eugene Cernan inside lunar module on lunar surface after EVA',
+      description:'Astronaut Eugene Cernan inside the lunar module on the lunar surface after extra-vehicular activity, Apollo 17.'}],
+      links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/AS17-145-22224/AS17-145-22224~thumb.jpg'}]},
+   {data:[{nasa_id:'S71-39357', title:'PLAQUE - LUNAR SURFACE (APOLLO XV)',
+      description:'A photographic replica of the plaque which the Apollo 15 astronauts will leave on the Moon during their landing mission.'}],
+      links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/S71-39357/S71-39357~thumb.jpg'}]}
+ ];
+ for(const photo of nonTerrainApollo){
+   for(const world of ['Earth','Moon','Mars'])assert.equal(classify(photo,world),null,
+      `${photo.data[0].nasa_id} must never be a landscape question`);
+ }
+ // Harder cases: subject keywords hidden within convincing NASA LROC captions.
+ const disguisedCrew={data:[{nasa_id:'PHOTO-MOON-CREW',title:'Lunar crater rocks',
+   description:'LROC photo archive of Apollo astronaut crew portrait inside lunar module with a lunar crater visible in the window.'}],
+   links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/photo/photo~thumb.jpg'}]};
+ assert.equal(classify(disguisedCrew,'Moon'),null,'crew photo is not a lunar-landscape question');
+ const disguisedPlaque={data:[{nasa_id:'PHOTO-MOON-PLAQUE',title:'Moon ridge terrain',
+   description:'LROC archival image of an Apollo plaque and commemorative flag at an exhibit.'}],
+   links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/photo/photo~thumb.jpg'}]};
+ assert.equal(classify(disguisedPlaque,'Moon'),null,'plaque photo is not a lunar-landscape question');
  const disguisedLaunch={data:[{nasa_id:'MOON-ROCKET-001',title:'Lunar crater panorama',description:'Launch of an Atlas V rocket from Cape Canaveral carrying an LROC instrument to image the Moon surface.'}],
    links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/fake/fake~thumb.jpg'}]};
  assert.equal(classify(disguisedLaunch,'Moon'),null,'reject launches even with plausible lunar-terrain titles');
@@ -60,12 +84,12 @@ function fakeFetch(url){
    const obs={data:[{nasa_id:'TEST-'+world,title,description}],links:[{rel:'preview',href:'https://images-assets.nasa.gov/image/test/test~thumb.jpg'}]};
    assert.equal(classify(obs,world)?.world,world,`legitimate ${world} terrain must be accepted`);
  }
- const badCache=new Map([['planet-impostor-nasa-library-v1.7',JSON.stringify([{id:'NASA-LIB-KSC-2009-3781',world:'Moon',image:'https://images-assets.nasa.gov/image/KSC-2009-3781/KSC-2009-3781~thumb.jpg',source:'https://images.nasa.gov/details/KSC-2009-3781'}])]]);
- assert.equal(bootstrap(badCache).bank.length,66,'obsolete v1.7 image labels must not be imported');
+ const badCache=new Map([['planet-impostor-nasa-library-v1.8-verified',JSON.stringify([{id:'NASA-LIB-KSC-2009-3781',world:'Moon',image:'https://images-assets.nasa.gov/image/KSC-2009-3781/KSC-2009-3781~thumb.jpg',source:'https://images.nasa.gov/details/KSC-2009-3781'}])]]);
+ assert.equal(bootstrap(badCache).bank.length,66,'obsolete v1.8 image labels must not be imported');
 
  // Failure to contact NASA must leave the original 66 images working as before.
  const offline=bootstrap();
  counts=await vm.runInContext('expandNasaQuestionLibrary',offline.ctx)({fetcher:async()=>{throw new Error('network unavailable')}});
  assert.equal(offline.bank.length,66,'network failure must not affect curated images');
- console.log('PASS — v1.8: strict location/subject/provenance screening plus simulated 170 distinct NASA catalog records (60/50/60), 104 acquired, cache, deduplication, filtering, offline fallback.');
+ console.log('PASS — v1.9: terrain-only screening (including Apollo crew and plaque regressions) plus simulated 170 distinct NASA catalog records (60/50/60), 104 acquired, cache, deduplication, filtering, offline fallback.');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,3 +1,7 @@
+## v1.9 NASA image quality
+
+The game is a landscape-identification quiz, so crew portraits, mission plaques, spacecraft interiors, and launches are not valid questions. Automatic NASA Library records now require surface-landform metadata and imaging-instrument provenance, with previous cached entries discarded. The total may fall short of 170; do not describe that as 170 individually verified photographs. See `CHANGELOG_v1.9.md` for limitations and test evidence.
+
 ## Version 1.8 accuracy notice
 
 A player correctly identified NASA image KSC-2009-3781 as Earth, but the online classifier had labeled it Moon because its caption referenced the Lunar Reconnaissance Orbiter mission. Version 1.8 blocks launch/facility photos and requires terrain plus observing-instrument provenance, and excludes untrusted Version 1.7 cached selections. Verify several NASA API images manually before final submission; do not claim that 170 photos have all been individually reviewed.

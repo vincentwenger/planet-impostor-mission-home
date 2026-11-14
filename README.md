@@ -1,3 +1,7 @@
+## Version 1.9 — exclude Apollo crew and plaque photographs
+
+The automatic NASA Image and Video Library extension now requires a clearly named surface feature and a surface-imaging instrument. Apollo crew photographs, lunar module interiors, plaques, launch scenes and other non-terrain subjects are excluded. The v1.7/v1.8 auto-library caches are discarded, while saved difficulty unlocks remain. The game can still use its 66 curated observations offline. See [`CHANGELOG_v1.9.md`](CHANGELOG_v1.9.md).
+
 ## Version 1.8 — NASA image accuracy fix
 
 The live NASA image catalog now requires evidence that an image actually **depicts terrain on the labeled world**. Photos of launches, facilities, portraits or mission hardware are excluded. The prior Version 1.7 automatically labeled cache is invalidated to remove images with unreliable labels. The original 66 curated NASA Photojournal questions remain available; the total number of additional online images may be lower than the 170-photo target because correctness takes priority over quantity. See `CHANGELOG_v1.8.md`.

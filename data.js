@@ -86,14 +86,14 @@ NASA_QUESTIONS.forEach(q=>{
 });
 
 
-// V1.8: safety-filtered expansion of the hand-curated 66-record Photojournal catalog with additional
+// V1.9: landscape-only expansion of the hand-curated 66-record Photojournal catalog with additional
 // distinct, source-linked images returned by NASA's public Image and Video Library.
 // NASA API: https://images-api.nasa.gov/search (no API key required).
 // This is progressive enhancement: the original game works if the API is offline.
 // Search metadata requires explicit surface-imaging provenance and rejects launches/hardware.
 // Previous v1.7 auto-classified cache is intentionally NOT trusted or imported.
 const NASA_IMAGE_TARGETS = Object.freeze({Earth:60,Moon:50,Mars:60});
-const NASA_IMAGE_LIBRARY_CACHE_KEY = 'planet-impostor-nasa-library-v1.8-verified';
+const NASA_IMAGE_LIBRARY_CACHE_KEY = 'planet-impostor-nasa-library-v1.9-landscapes';
 const NASA_IMAGE_QUERIES = Object.freeze({
   Earth: [
     'Terra ASTER volcano', 'Terra ASTER desert', 'NASA satellite glacier landscape',
@@ -104,10 +104,10 @@ const NASA_IMAGE_QUERIES = Object.freeze({
   ],
   Moon: [
     'Lunar Reconnaissance Orbiter crater', 'LRO lunar surface',
-    'Moon lunar terrain', 'Apollo lunar landscape', 'lunar highlands',
+    'Moon lunar terrain', 'LROC crater landscape', 'lunar highlands',
     'lunar south pole terrain', 'Lunar Reconnaissance Orbiter ridges', 'lunar regolith boulders',
     {term:'Moon surface',page:1},{term:'Moon surface',page:2},
-    {term:'Apollo lunar',page:2},{term:'Lunar Reconnaissance Orbiter',page:2}
+    {term:'LROC lunar craters',page:2},{term:'Lunar Reconnaissance Orbiter Camera terrain',page:2}
   ],
   Mars: [
     'Mars Reconnaissance Orbiter dunes', 'Mars HiRISE crater',
@@ -122,15 +122,18 @@ const NASA_IMAGE_QUERIES = Object.freeze({
 // ground-truth database of which world is physically depicted. An Atlas rocket
 // launch from Cape Canaveral can mention the Moon, LRO and lunar craters.
 // Never label a candidate by the destination of the mission alone.
-const NASA_LIBRARY_BLOCKED = /\b(artist.?s? (concept|rendition|illustration)|illustration|rendering|animation|diagram|graph|chart|logo|patch|poster|map legend|mission control|launch|launched|liftoff|lift.?off|rocket|atlas v|centaur|space shuttle|cape canaveral|kennedy space center|launch complex|launch pad|flight deck|spacecraft assembly|model testing|mockup|computer simulation|selfie|team portrait|portrait|microscope|wind tunnel|test stand|press conference|ceremony|crew photo|astronaut training|spacecraft hardware)\b/i;
-// An image of terrain needs a geological/landscape subject in the TITLE,
-// not merely a sentence saying the spacecraft will study terrain later.
-const NASA_LIBRARY_TERRAIN_TITLE = /\b(surfaces?|terrain|landscapes?|dunes?|craters?|volcano(?:es)?|volcanic|rocks?|ridges?|canyons?|glaciers?|deserts?|cliffs?|mountains?|ice|plains?|basins?|lava|lakes?|coasts?|islands?|valleys?|regolith|maria|mare|highlands?|slopes?|outcrops?|erosion|sediments?|dust|sand|geolog(?:y|ical)|panoramas?|polar|badlands|salt flats?|shadowed regions?)\b/i;
-// Evidence that a planetary camera actually observed the target's surface.
-// The name of an exploration mission alone is NOT sufficient for inclusion.
+// These photos are not valid for a "which WORLD is this LANDSCAPE" quiz,
+// even if the text mentions lunar terrain or Martian geology.
+const NASA_LIBRARY_BLOCKED = /\b(artist.?s? (concept|rendition|illustration)|illustration|rendering|animation|diagram|graph|chart|logo|patch|poster|map legend|mission control|launch|launched|liftoff|lift.?off|rocket|atlas v|centaur|space shuttle|cape canaveral|kennedy space center|launch complex|launch pad|flight deck|spacecraft assembly|model testing|mockup|computer simulation|selfie|team portrait|portrait|microscope|wind tunnel|test stand|press conference|ceremony|crew photo|astronaut training|spacecraft hardware|astronauts?|cosmonauts?|crewmembers?|space ?suits?|helmets?|faces?|portraits?|interiors?|cabin|cockpit|lunar module|command module|plaques?|commemorative|inscriptions?|signatures?|autographs?|flags?|emblems?|insignia|patches?|crew cabin|footprints?|footsteps?|hatches?|docking|spaceship|spacewalk|e\.?v\.?a\.?|mission insignia|memorabilia)\b/i;
+// Broad terms like "surface" and "landscape" alone are not sufficient:
+// the image's title must identify an actual geological feature.
+const NASA_LIBRARY_TERRAIN_TITLE = /\b(dunes?|craters?|volcano(?:es)?|volcanic|rocks?|ridges?|canyons?|glaciers?|deserts?|cliffs?|mountains?|ice|plains?|basins?|lava|lakes?|coasts?|islands?|valleys?|regolith|maria|mare|highlands?|slopes?|outcrops?|erosion|sediments?|dust|sand|geolog(?:y|ical)|badlands|salt flats?|fractures?|scarps?|boulders?|fissures?|landforms?|yardangs?|deltas?)\b/i;
+// Keep automatic candidates restricted to cameras/sensors that actually image
+// the named world. Apollo astronaut/crew archives are excluded entirely from
+// AUTO-ADDED images; manually curated Apollo landscape photos could be added later.
 const NASA_LIBRARY_PROVENANCE = {
   Earth: /\b(ASTER|Landsat|Earth Observatory|Earth-observing|Terra satellite|Aqua satellite|Sentinel-2)\b/i,
-  Moon: /\b(LROC|Lunar Reconnaissance Orbiter Camera|LRO NAC|LRO Narrow Angle Camera|Lunar Orbiter (?:camera|imagery)|Apollo (?:11|12|14|15|16|17)[^.!?]{0,100}(?:lunar surface|on the Moon))\b/i,
+  Moon: /\b(LROC(?:\s+NAC)?|Lunar Reconnaissance Orbiter Camera|LRO (?:NAC|WAC|Narrow Angle Camera)|Lunar Orbiter (?:camera|imagery))\b/i,
   Mars: /\b(HiRISE|Mastcam(?:-Z)?|Mars Reconnaissance Orbiter.*?(?:image|camera|photograph)|Mars Odyssey.*?(?:image|camera|photograph)|Mars Global Surveyor.*?(?:image|camera|photograph))\b/i
 };
 const NASA_LIBRARY_BODY = {
@@ -151,7 +154,7 @@ function nasaAssetToQuestion(item,world){
   if(!identifier||!title||!description||!NASA_LIBRARY_BODY[world]?.test(text))return null;
   // Site and launch-archive metadata can discuss the Moon/Mars in detail,
   // despite depicting a rocket or a control room on Earth.
-  if(/^KSC[-_]/i.test(identifier)||NASA_LIBRARY_EARTH_FACILITY.test(place)||NASA_LIBRARY_BLOCKED.test(text))return null;
+  if(/^(?:KSC|AS\d{2}|S\d{2}|JSC|MSFC|GRC)[-_]/i.test(identifier)||NASA_LIBRARY_EARTH_FACILITY.test(place)||NASA_LIBRARY_BLOCKED.test(text))return null;
   // Require positive subject evidence and named observing camera/instrument.
   if(!NASA_LIBRARY_TERRAIN_TITLE.test(title)||!NASA_LIBRARY_PROVENANCE[world].test(text))return null;
   // Reject cross-world captions: the quiz must ask where the photo was taken,
@@ -239,6 +242,6 @@ async function expandNasaQuestionLibrary({fetcher,targets,searches}={}){
   }
   return nasaCountByWorld();
 }
-// Restore only v1.8-filtered metadata; the older v1.7 cache is ignored.
-// This avoids importing photos that were incorrectly labeled by mission keywords.
+// Restore only v1.9 landscape-filtered metadata. v1.7 and v1.8 caches are ignored
+// to expunge Apollo-crew/plaques and other non-terrain images already downloaded.
 if(typeof localStorage!=='undefined')loadCachedNasaLibrary();
