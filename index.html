@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071323">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Planet Impostor">
+  <meta name="application-name" content="Planet Impostor">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta name="si-assistance" content="HTML, CSS, JavaScript, code-drawn visuals, and descriptive text developed with assistance from OpenAI ChatGPT.">
+  <meta name="description" content="Planet Impostor: Mission Home — a NASA imagery-powered Earth, Moon and Mars space mission game.">
+  <title>Planet Impostor: Mission Home | Reunia Space AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand"><span class="brand-logo" aria-hidden="true">◉</span><span><b>PLANET <em>IMPOSTOR</em></b><small>MISSION HOME // REUNIA SPACE AI</small></span></div>
+    <div class="header-actions"><span class="nasa-pill">NASA DATA · SPACE APPS 2026</span><button class="icon-button" id="soundToggle" title="Toggle sound" aria-label="Toggle sound">♪</button><button class="icon-button" id="helpToggle" title="Game instructions" aria-label="Game instructions">?</button></div>
+  </header>
+  <main class="main-grid">
+    <section class="flight-panel panel" aria-label="Mission flight map">
+      <div class="eyebrow"><span class="live-dot"></span> MISSION CONTROL <span class="separator">/</span> <span id="flightStatus">STANDBY</span></div>
+      <div class="flight-header"><div><h1 id="stageTitle">THE JOURNEY<br><span>STARTS HERE.</span></h1><p id="stageSubtitle">Configure your spacecraft. Then use NASA landscape clues to navigate across the Solar System.</p></div><div id="stageCounter" class="stage-counter">0<span>/ 4</span></div></div>
+      <div id="spaceScene" class="space-scene">
+        <div id="planetStart" class="planet planet-earth"><span class="planet-name">EARTH</span></div>
+        <svg class="path-svg" viewBox="0 0 1000 330" preserveAspectRatio="none" aria-hidden="true"><path d="M 180 183 Q 500 60 820 183" stroke="rgba(169,202,243,.35)" stroke-width="2" fill="none" stroke-dasharray="6 11"/><path id="shipPath" d="M 180 183 Q 500 60 820 183" stroke="transparent" stroke-width="14" fill="none"/></svg>
+        <div id="ship" class="ship" aria-label="Your spacecraft" style="left:18%;top:55%"><svg viewBox="0 0 110 78" role="img" aria-label="Spacecraft"><defs><linearGradient id="hull" x1="0" x2="1"><stop stop-color="#8398ae"/><stop offset=".55" stop-color="#eefaff"/><stop offset="1" stop-color="#7a96b1"/></linearGradient></defs><path class="ship-flame" d="M20 31 L0 39 L20 48 L14 39Z" fill="#f6a34e"/><path d="M34 13 L52 25 L70 25 L58 12Z" fill="#6c8aa3"/><path d="M34 65 L52 52 L70 52 L58 66Z" fill="#6c8aa3"/><path d="M19 29 L55 22 Q88 22 105 39 Q88 56 55 56 L19 49 L27 39Z" fill="url(#hull)" stroke="#b9e4ff" stroke-width="1.5"/><ellipse cx="65" cy="39" rx="11" ry="10" fill="#1f729c" stroke="#9cf1ff" stroke-width="2"/><path d="M27 25 L18 17 L36 25 M27 53 L18 61 L36 53" stroke="#b7d6ea" stroke-width="5"/></svg></div>
+        <div id="planetEnd" class="planet planet-moon"><span class="planet-name">MOON</span></div>
+        <div class="scene-caption"><span id="sceneFrom">EARTH</span><span class="scene-caption-center">FLIGHT PATH · SI-ASSISTED ILLUSTRATION</span><span id="sceneTo">MOON</span></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat"><div class="stat-heading"><span>FLIGHT PROGRESS</span><strong id="progressValue">0%</strong></div><div class="meter"><div id="progressBar" class="meter-fill progress-fill"></div></div></div>
+        <div class="stat"><div class="stat-heading"><span>REMAINING FUEL</span><strong id="fuelValue">—</strong></div><div class="meter"><div id="fuelBar" class="meter-fill fuel-fill"></div></div></div>
+      </div>
+      <div class="mission-record"><div><span class="record-label">SCORE</span><strong id="score">0000</strong></div><div><span class="record-label">CORRECT</span><strong id="correctCount">0</strong></div><div><span class="record-label">INCORRECT</span><strong id="wrongCount">0</strong></div><div><span class="record-label">DISCOVERIES</span><strong id="discoveryCount">0</strong></div></div>
+      <div class="flight-footer"><span class="pulse-icon">✦</span><span id="flightMessage">Spacecraft systems awaiting configuration.</span></div>
+    </section>
+    <section class="quiz-panel panel" aria-label="Game controls">
+      <div id="setupScreen" class="screen setup-screen">
+        <div class="eyebrow green">PRE-FLIGHT CHECKLIST</div><h2>Build your ship.<br><span>Plan the mission.</span></h2><p class="subdued">Your choices change how quickly you advance and how much fuel each guess costs. Choose carefully.</p>
+        <div class="setup-group"><div class="setup-label"><span>01 / ENGINE SYSTEM</span><small>Speed vs. consumption</small></div><div class="select-cards" id="engineOptions"></div></div>
+        <div class="setup-group"><div class="setup-label"><span>02 / FUEL TANK</span><small>Capacity vs. mass</small></div><div class="select-cards" id="tankOptions"></div></div>
+        <div class="setup-group"><div class="setup-label"><span>03 / DIFFICULTY</span><small>Fuel risk</small></div><div class="select-cards" id="difficultyOptions"></div></div>
+        <div id="designReport" class="design-report"></div><p class="source-note">Inspired by NASA’s <a href="https://www.nasa.gov/wp-content/uploads/2025/04/250323-design-and-develop-science-mission.pdf" target="_blank" rel="noopener noreferrer">mission design process</a>: objective, spacecraft configuration, flight, and ground operations.</p>
+        <button id="launchButton" class="primary-button">LAUNCH MISSION <span>↗</span></button>
+      </div>
+      <div id="questionScreen" class="screen question-screen hidden">
+        <div class="question-header"><div><div class="eyebrow green" id="questionCode">NASA OBSERVATION // 001</div><h2>Which world<br><span>is this?</span></h2></div><div class="hint-badge" id="questionPhase">EARTH OR MOON?</div></div>
+        <div class="photo-frame"><img id="nasaPhoto" alt="NASA satellite or rover terrain image. Identify its world." referrerpolicy="no-referrer"><div class="photo-noise" aria-hidden="true"></div><div class="photo-topline"><span>INCOMING VISUAL TRANSMISSION</span><span id="imageStatus">NASA IMAGE</span></div><div class="photo-bottomline"><span>OBSERVATION · <span id="questionNumber">01</span></span><span>◉ DATA LINK</span></div><div id="photoFallback" class="photo-fallback hidden"><div id="terrainPlaceholder" class="terrain-placeholder"></div><div class="fallback-text">ILLUSTRATIVE FALLBACK<br><small>NASA photo could not load; use the terrain clue below.</small></div></div></div>
+        <div id="fallbackClue" class="fallback-clue hidden"></div>
+        <p class="answer-prompt">Identify the origin of this terrain. Every answer affects your flight.</p>
+        <div class="answer-buttons" id="answerButtons"></div>
+        <div id="resultBox" class="result-box hidden" aria-live="polite"><div id="resultHeadline" class="result-headline"></div><p id="resultFact"></p><a id="resultSource" target="_blank" rel="noopener noreferrer">NASA photo & source ↗</a><button id="nextQuestion" class="primary-button">CONTINUE FLIGHT <span>→</span></button></div>
+        <div id="questionFooter" class="tiny-info">TAP TO ANSWER · NASA IMAGE SOURCE REVEALED AFTER EACH GUESS</div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><span>© 2026 REUNIA SPACE AI · SI-ASSISTED CODE · INDEPENDENT HACKATHON PROTOTYPE</span><span><a href="NASA_SOURCES.md" target="_blank">NASA IMAGE CREDITS</a><span class="dot-separator">•</span> Simplified arcade physics — not a real trajectory simulator</span></footer>
+</div>
+<div class="overlay hidden" id="dialogOverlay" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog"><div id="dialogIcon" class="dialog-icon">🏆</div><div class="eyebrow green" id="dialogOverline">LANDING CONFIRMED</div><h2 id="dialogTitle">Destination reached!</h2><p id="dialogDescription"></p><div id="dialogReward" class="reward-box"></div><button id="dialogButton" class="primary-button">CONTINUE <span>→</span></button><button id="dialogSecondary" class="secondary-button hidden" type="button">RECONFIGURE SHIP</button></div></div>
+<div class="overlay hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="dialog help-dialog"><div class="eyebrow green">MISSION GUIDE</div><h2 id="helpTitle">How to play</h2><p>Travel Earth → Moon → Mars → Moon → Earth. Each question shows a NASA observation. Guess the world to advance your ship. Wrong guesses move you backward and cost extra fuel. Reach a base to refuel. Run out of fuel before landing and the mission fails.</p><p>Design choices demonstrate the trade-off between propulsion performance, fuel capacity, and mass. The flight path and quiz-related fuel usage are deliberately simplified for a learning game—not NASA flight-dynamics predictions.</p><p>Photos link to their original NASA records after you answer. If a NASA image cannot load, a labeled illustration and text clue appear so the game still works.</p><button id="closeHelp" class="primary-button">UNDERSTOOD <span>✓</span></button></div></div>
+<script src="data.js"></script><script src="game.js"></script>
+<script>
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
