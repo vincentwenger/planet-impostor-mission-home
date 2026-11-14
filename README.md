@@ -1,5 +1,15 @@
 # Planet Impostor: Mission Home
 
+## Version 1.5 — more NASA images, fewer repeats
+
+- 66 curated NASA observations: 22 Earth, 20 Moon, 24 Mars (previously 23 total).
+- Includes deserts, volcanic fields, glacial landscapes, polar craters, lunar ridges, Martian ice, and rover panoramas.
+- The same question is not intentionally repeated across the four flight legs until the eligible question catalog has been exhausted.
+- Recent image history is stored locally in the browser to reduce repeats between replay sessions on the same device. Clearing site data resets that history.
+- Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
+- Existing 2/3/3/2 answer choices, Easy→Medium→Hard progression, and all flight mechanics are unchanged.
+
+
 **Reunia Space AI | NASA Space Apps Challenge 2026**
 
 A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate your spacecraft **Earth → Moon → Mars → Moon → Earth** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. Players begin with Easy difficulty; completing all four journeys unlocks Medium, and completing all four on Medium unlocks Hard. Each mode sets the mission’s fuel budget, speed and penalties automatically.
@@ -73,6 +83,6 @@ Installation is **not supported from a local `file://` page**. You can still run
 
 This is a web app packaged like a phone game; it is **not yet** an App Store or Google Play native binary. It can be wrapped later using Capacitor if needed.
 
-## Version 1.4
+## Version 1.5
 
 Difficulty progression: Easy available from the start, Medium unlocked by completing the full Easy round trip, Hard unlocked by completing the full Medium round trip. Locked modes are disabled visually and programmatically. Existing gameplay and NASA questions are unchanged.

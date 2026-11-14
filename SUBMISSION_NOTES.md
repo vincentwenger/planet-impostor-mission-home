@@ -32,6 +32,16 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 
 The game uses **fictional arcade progress and fuel units**. The difficulty presets vary the simplified fuel budget, speed and setbacks. The model is not a realistic spacecraft engineering simulation. Do not claim realistic orbital propagation or validated delta-v values.
 
-## Version 1.4 progression
+## Version 1.5 progression
 
 Easy is available on first visit. A complete four-leg round trip on Easy unlocks Medium; a complete four-leg round trip on Medium unlocks Hard. Progress saves locally using browser storage (no account or cloud sync).
+
+
+## Version 1.5 — more NASA images, fewer repeats
+
+- 66 curated NASA observations: 22 Earth, 20 Moon, 24 Mars (previously 23 total).
+- Includes deserts, volcanic fields, glacial landscapes, polar craters, lunar ridges, Martian ice, and rover panoramas.
+- The same question is not intentionally repeated across the four flight legs until the eligible question catalog has been exhausted.
+- Recent image history is stored locally in the browser to reduce repeats between replay sessions on the same device. Clearing site data resets that history.
+- Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
+- Existing 2/3/3/2 answer choices, Easy→Medium→Hard progression, and all flight mechanics are unchanged.

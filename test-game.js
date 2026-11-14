@@ -20,8 +20,12 @@ function createGame(){
  return {get,doc,ctx,state:vm.runInContext('state',ctx),qbank:vm.runInContext('NASA_QUESTIONS',ctx)};
 }
 let {get,doc,ctx,state,qbank}=createGame();
-assert.equal(qbank.length,23);assert.deepEqual([...new Set(qbank.map(q=>q.world))].sort(),['Earth','Mars','Moon']);
-assert(qbank.every(q=>q.source.startsWith('https://science.nasa.gov/photojournal/')&&q.image.includes(q.id+'.jpg')));
+assert.equal(qbank.length,66);
+assert.equal(qbank.filter(q=>q.world==='Earth').length,22);
+assert.equal(qbank.filter(q=>q.world==='Moon').length,20);
+assert.equal(qbank.filter(q=>q.world==='Mars').length,24);
+assert.equal(new Set(qbank.map(q=>q.id)).size,66,'every NASA source has a distinct ID');assert.deepEqual([...new Set(qbank.map(q=>q.world))].sort(),['Earth','Mars','Moon']);
+assert(qbank.every(q=>q.source.startsWith('https://science.nasa.gov/')&&q.image.startsWith('https://assets.science.nasa.gov/')));
 assert.equal(get('difficultyOptions').children.length,3);
 assert.equal(state.difficulty,'easy');
 assert.equal(state.fuel,150);
@@ -49,6 +53,8 @@ function completeFourLegs(){
  }
 }
 completeFourLegs();
+assert.equal(new Set(state.lastIDs).size,state.lastIDs.length,'no recently repeated images within the first mission');
+assert(saved.has('planet-impostor-recent-photo-ids-v1'),'recent image history saved across sessions');
 assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1','Easy round trip unlocks Medium');
 assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'));
 get('dialogButton').click();assert.equal(state.status,'setup');assert.equal(state.difficulty,'medium');
@@ -86,4 +92,29 @@ const wrong=state.question.world==='Earth'?'Moon':'Earth';
 vm.runInContext(`answer(${JSON.stringify(wrong)},document.getElementById('answerButtons').children[0])`,ctx);
 get('nextQuestion').click();assert.equal(state.status,'failed');
 assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');
-console.log('PASS — Easy → Medium → Hard full-tour unlocks, persistence across reload, locked selections, 2/3/3/2 answers, keyboard, NASA records, 4 legs, victory and fuel failure.');
+
+// Regression: using more images must actually prevent repeat cards across flight legs.
+{
+ const test=createGame(), current=test.state, context=test.ctx;
+ const seen=new Set();
+ current.leg=0;
+ for(let i=0;i<14;i++){
+  const q=vm.runInContext('choosePhoto()',context);
+  assert(!seen.has(q.id),'Earth/Moon mission unexpectedly reused an image');
+  seen.add(q.id);
+ }
+ current.leg=1;
+ for(let i=0;i<20;i++){
+  const q=vm.runInContext('choosePhoto()',context);
+  assert(!seen.has(q.id),'Moon/Mars mission repeated a prior-leg image');
+  seen.add(q.id);
+ }
+ assert.equal(seen.size,34,'question deck must continue across legs');
+ const stored=JSON.parse(saved.get('planet-impostor-recent-photo-ids-v1'));
+ assert(stored.length>0&&stored.length<=45,'photo history is bounded and persisted');
+ const replay=createGame();
+ replay.state.leg=0;
+ const next=vm.runInContext('choosePhoto()',replay.ctx);
+ assert(!stored.slice(-22).includes(next.id),'recent replay photo should be avoided if alternatives exist');
+}
+console.log('PASS — v1.5 with 66 NASA images and persistent anti-repeat photo history;  Easy → Medium → Hard full-tour unlocks, persistence across reload, locked selections, 2/3/3/2 answers, keyboard, NASA records, 4 legs, victory and fuel failure.');
