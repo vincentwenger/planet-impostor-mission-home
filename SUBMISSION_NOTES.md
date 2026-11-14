@@ -1,6 +1,14 @@
+## Current gameplay — Version 1.11
+
+The campaign now introduces a **fourth, endless Insane difficulty** after Hard. Play Easy Earth → Moon → Mars to unlock Medium; Medium Mars → Moon → Earth to unlock Hard; Hard Earth → Moon → Mars to unlock Insane. In Insane, the flight sequence repeats Mars → Moon → Earth → Moon → Mars indefinitely. One wrong answer ends the run immediately. If fuel is depleted, the run also ends. Correct-answer points are 100 / 200 / 350 for Easy / Medium / Hard. Insane starts at 500 for the first correct answer and **multiplies the next correct-answer reward by 1.10** every time, across landings. Landing bonuses are additional 250 / 500 / 900 / 1500 points. The score is shown on-screen and in survival results.
+
+These game rules are **arcade abstractions**, not actual NASA orbital dynamics or realistic propulsion calculations. The NASA dataset/image caveat from v1.7–v1.9 still applies: the automatically acquired catalog may contain unsuitable images even after metadata screening; visually audit any examples shown in the submission video and document the exact NASA records used.
+
+---
+
 ## Version 1.10 mission progression (current)
 
-The current game spans six journeys with one automatically advancing difficulty per pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard awards the final victory. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. When recording the 30-second demonstration, show the Easy victory on Mars and automatic handoff to Medium.
+The core campaign spans six journeys with one automatically advancing difficulty per pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard unlocks endless Insane survival mode. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. When recording the 30-second demonstration, show the Easy victory on Mars and automatic handoff to Medium.
 
 ## v1.9 NASA image quality
 

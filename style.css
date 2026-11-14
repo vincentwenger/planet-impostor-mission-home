@@ -71,3 +71,10 @@ body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inse
 .pick-card.locked .pick-symbol{filter:grayscale(1);opacity:.8}
 .pick-card.locked small{color:#9cadbb}
 .difficulty-hint{font-size:12px;line-height:1.5;color:#a9c8d8;margin:11px 1px 0}
+
+/* v1.11 — four difficulty cards and readable exponential scores */
+.select-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pick-card{padding:10px 7px;min-height:113px}
+.mission-record>div:first-child strong{font-size:clamp(13px,1.55vw,21px);overflow-wrap:anywhere}
+@media (max-width:620px){.select-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.pick-card{min-height:90px;padding:12px}}
+.score-hint{color:#b8fc65;font-size:11px;font-weight:800;letter-spacing:.045em;line-height:1.5;margin:-7px 0 14px}

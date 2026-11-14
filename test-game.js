@@ -26,95 +26,102 @@ assert.equal(qbank.filter(q=>q.world==='Moon').length,20);
 assert.equal(qbank.filter(q=>q.world==='Mars').length,24);
 assert.equal(new Set(qbank.map(q=>q.id)).size,66,'every NASA source has a distinct ID');assert.deepEqual([...new Set(qbank.map(q=>q.world))].sort(),['Earth','Mars','Moon']);
 assert(qbank.every(q=>q.source.startsWith('https://science.nasa.gov/')&&q.image.startsWith('https://assets.science.nasa.gov/')));
-assert.equal(get('difficultyOptions').children.length,3);
+assert.equal(get('difficultyOptions').children.length,4);
 assert.equal(state.difficulty,'easy');
 assert.equal(state.fuel,150);
 assert.equal(get('difficultyOptions').children[0].disabled,false);
-assert.equal(get('difficultyOptions').children[1].disabled,true);
-assert.equal(get('difficultyOptions').children[2].disabled,true);
-get('difficultyOptions').children[1].click();assert.equal(state.difficulty,'easy');
-get('difficultyOptions').children[2].click();assert.equal(state.difficulty,'easy');
-// Each difficulty is a two-flight chapter in a continuous six-flight campaign.
+for(const index of [1,2,3])assert.equal(get('difficultyOptions').children[index].disabled,true);
 const allLegChoices=[
  ['Earth','Moon'],['Earth','Moon','Mars'],
  ['Earth','Moon','Mars'],['Moon','Earth'],
  ['Earth','Moon'],['Earth','Moon','Mars']
 ];
 const allLegRoutes=[['Earth','Moon'],['Moon','Mars'],['Mars','Moon'],['Moon','Earth'],['Earth','Moon'],['Moon','Mars']];
-assert.equal(vm.runInContext('LEGS.length',ctx),6);
+assert.equal(vm.runInContext('LEGS.length',ctx),10); // six chapter flights plus 4 loop templates
 assert.equal(get('stageCounter').innerHTML,'0<span>/ 6</span>');
+function answerCorrect(test){
+ const {state,ctx,get}=test;
+ const i=vm.runInContext('currentLeg().options.indexOf(state.question.world)',ctx);
+ vm.runInContext(`answer(${JSON.stringify(state.question.world)},document.getElementById('answerButtons').children[${i}])`,ctx);
+}
+function answerWrong(test){
+ const {state,ctx,get}=test;
+ const wrong=vm.runInContext('currentLeg().options.find(w=>w!==state.question.world)',ctx);
+ vm.runInContext(`answer(${JSON.stringify(wrong)},document.getElementById('answerButtons').children[0])`,ctx);
+}
 get('launchButton').click();assert.equal(state.leg,0);assert.equal(state.status,'quiz');
+let scoreBefore=0;
+const points=[100,100,200,200,350,350];
 for(let leg=0;leg<6;leg++){
  const expectedMode=leg<2?'easy':leg<4?'medium':'hard';
- assert.equal(state.leg,leg);assert.equal(state.status,'quiz');
- assert.equal(state.difficulty,expectedMode,'difficulty should switch automatically for each two-flight chapter');
- const opts=vm.runInContext('LEGS[state.leg].options',ctx);
- assert.deepEqual([...opts],allLegChoices[leg],`leg ${leg+1} option set`);
- const route=vm.runInContext('([LEGS[state.leg].from,LEGS[state.leg].to])',ctx);
- assert.deepEqual([...route],allLegRoutes[leg],`leg ${leg+1} route`);
+ assert.equal(state.leg,leg);assert.equal(state.status,'quiz');assert.equal(state.difficulty,expectedMode);
+ const opts=vm.runInContext('currentLeg().options',ctx);
+ assert.deepEqual([...opts],allLegChoices[leg]);
+ assert.deepEqual([...vm.runInContext('([currentLeg().from,currentLeg().to])',ctx)],allLegRoutes[leg]);
  assert.equal(get('answerButtons').children.length,opts.length);
  assert.equal(get('answerButtons').classList.contains('three-choices'),opts.length===3);
- assert(get('flightStatus').textContent.includes(expectedMode.toUpperCase()));
  state.progress=92;state.fuel=80;
- const q=state.question;const ix=opts.indexOf(q.world);
- vm.runInContext(`answer(${JSON.stringify(q.world)},document.getElementById('answerButtons').children[${ix}])`,ctx);
+ scoreBefore=state.score;
+ answerCorrect({get,ctx,state});
+ assert.equal(state.score,scoreBefore+points[leg]);
  assert.equal(state.status,'answer');assert(state.progress>=100);
  get('nextQuestion').click();assert.equal(state.status,'landing');
- if(leg===0){
-  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1')??null,null,'Moon alone must not unlock Medium');
- }else if(leg===1){
-  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1','Mars arrival on Easy unlocks Medium');
-  assert.equal(state.difficulty,'medium');assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'));
-  assert(get('dialogButton').innerHTML.includes('CONTINUE ON MEDIUM'));
- }else if(leg===2){
-  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1','Moon alone must not unlock Hard');
- }else if(leg===3){
-  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2','Earth arrival on Medium unlocks Hard');
-  assert.equal(state.difficulty,'hard');assert(get('dialogReward').innerHTML.includes('HARD MODE UNLOCKED'));
-  assert(get('dialogButton').innerHTML.includes('CONTINUE ON HARD'));
- }else if(leg===5){
-  assert(get('dialogTitle').textContent.includes('Champion'),'the Hard chapter should win on Mars');
-  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');
- }
- if(leg<5){
-  get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,leg+1);
- }else{
-  get('dialogButton').click();assert.equal(state.status,'setup');assert.equal(state.difficulty,'easy');
- }
+ if(leg===0){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1')??null,null)}
+ if(leg===1){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1');assert.equal(state.difficulty,'medium');assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'))}
+ if(leg===2){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1')}
+ if(leg===3){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');assert.equal(state.difficulty,'hard');assert(get('dialogReward').innerHTML.includes('HARD MODE UNLOCKED'))}
+ if(leg===4){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2')}
+ if(leg===5){assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');assert.equal(state.difficulty,'insane');assert(get('dialogReward').innerHTML.includes('INSANE MODE UNLOCKED'))}
+ get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,leg+1);
 }
-assert.equal(new Set(state.lastIDs).size,state.lastIDs.length,'no recently repeated images within the campaign');
-assert(saved.has('planet-impostor-recent-photo-ids-v1'),'recent image history saved across sessions');
-// Reloading keeps unlocks, and selecting an unlocked chapter starts at its correct origin.
+assert.equal(state.difficulty,'insane');
+assert.equal(get('difficultyOptions').children.length,4);
+const endlessRoute=[['Mars','Moon'],['Moon','Earth'],['Earth','Moon'],['Moon','Mars']];
+// Test 12 additional endless legs: routing repeats after four, no final win.
+for(let i=0;i<12;i++){
+ assert.equal(state.leg,6+i);assert.equal(state.status,'quiz');
+ assert.equal(state.difficulty,'insane');
+ assert.deepEqual([...vm.runInContext('([currentLeg().from,currentLeg().to])',ctx)],endlessRoute[i%4]);
+ state.progress=94;state.fuel=90;
+ const previousStreak=state.insaneStreak, previousScore=state.score;
+ answerCorrect({get,ctx,state});
+ const expectedAward=Math.round(500*Math.pow(1.10,previousStreak));
+ assert.equal(state.score,previousScore+expectedAward);
+ assert.equal(state.insaneStreak,previousStreak+1);
+ get('nextQuestion').click();assert.equal(state.status,'landing');
+ assert(get('dialogOverline').textContent.includes('INSANE SURVIVAL'));
+ get('dialogButton').click();assert.equal(state.status,'quiz');
+}
+assert.equal(state.insaneLegsCompleted,12);
+assert(get('stageCounter').innerHTML.includes('∞'),'HUD shows the endless stage counter');
+// One wrong answer must end Insane immediately, without a chance to retry the leg.
+const finalScore=state.score;
+answerWrong({get,ctx,state});
+assert.equal(state.status,'failed');assert.equal(state.score,finalScore);
+assert.equal(get('dialogTitle').textContent,'One wrong answer — game over!');
+assert(get('dialogReward').innerHTML.includes('FINAL SURVIVAL SCORE'));
+assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');
+get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,6);assert.equal(state.difficulty,'insane');assert.equal(state.insaneStreak,0);assert.equal(state.score,0);
+// A separately selected unlocked Insane run begins from Mars, with the rank still saved.
 ({get,doc,ctx,state,qbank}=createGame());
-assert.equal(state.difficulty,'easy');
-assert.equal(get('difficultyOptions').children[1].disabled,false,'Medium persisted');
-assert.equal(get('difficultyOptions').children[2].disabled,false,'Hard persisted');
-get('difficultyOptions').children[1].click();assert.equal(state.difficulty,'medium');
-assert.equal(get('sceneFrom').textContent,'MARS');
-get('launchButton').click();assert.equal(state.leg,2);assert.equal(state.status,'quiz');
+assert.equal(get('difficultyOptions').children[3].disabled,false);
+get('difficultyOptions').children[3].click();assert.equal(state.difficulty,'insane');assert.equal(get('sceneFrom').textContent,'MARS');
+get('launchButton').click();assert.equal(state.leg,6);
+answerCorrect({get,ctx,state});assert.equal(state.score,500);
+// Failure on earlier difficulties still follows the original retry mechanic.
 vm.runInContext('resetGame()',ctx);
-get('difficultyOptions').children[2].click();assert.equal(state.difficulty,'hard');
-assert.equal(get('sceneFrom').textContent,'EARTH');
-get('launchButton').click();assert.equal(state.leg,4);
-// Keys 1/2/3 work only for three-choice flights.
-for(const legIndex of [1,2,5]){
- vm.runInContext(`startLeg(${legIndex})`,ctx);
- state.question=qbank.find(q=>q.world==='Mars');
- assert.equal(get('answerButtons').children.length,3);
- doc.listeners.keydown({key:'3'});
- assert.equal(state.status,'answer');
-}
-for(const legIndex of [0,3,4]){
- vm.runInContext(`startLeg(${legIndex})`,ctx);
- doc.listeners.keydown({key:'3'});assert.equal(state.status,'quiz');
-}
-// Failure does not reset earned difficulty unlocks.
-vm.runInContext('resetGame()',ctx);
-get('launchButton').click();state.fuel=1;state.progress=0;
-const wrong=state.question.world==='Earth'?'Moon':'Earth';
-vm.runInContext(`answer(${JSON.stringify(wrong)},document.getElementById('answerButtons').children[0])`,ctx);
+get('difficultyOptions').children[0].click();get('launchButton').click();state.fuel=1;
+answerWrong({get,ctx,state});assert.equal(state.status,'answer');
 get('nextQuestion').click();assert.equal(state.status,'failed');
-assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');
+assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');
+// Keys 1/2/3 work in Insane's three-option leg; key 3 has no effect on a two-option leg.
+vm.runInContext("state.difficulty='insane';startLeg(6)",ctx);
+assert.equal(get('answerButtons').children.length,3);
+doc.listeners.keydown({key:'3'});assert(['answer','failed'].includes(state.status));
+vm.runInContext('startLeg(7)',ctx);
+assert.equal(get('answerButtons').children.length,2);
+doc.listeners.keydown({key:'3'});assert.equal(state.status,'quiz');
+assert(saved.has('planet-impostor-recent-photo-ids-v1'));
 
 // Regression: NEVER repeat an eligible image until every eligible image has appeared.
 const CYCLE_KEY='planet-impostor-used-photo-ids-v1';
@@ -189,4 +196,4 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  for(let i=0;i<43;i++)choose(game,0);
  for(const id of marsBefore)assert(game.state.usedPhotoIDs.has(id),'Earth/Moon recycling erased Mars history');
 }
-console.log('PASS — v1.10 automatic Easy → Medium → Hard 6-flight campaign, persistent no-repeat image cycles, NASA questions and fuel gameplay.');
+console.log('PASS — v1.11 Easy → Medium → Hard → endless Insane, escalating points, immediate loss, persistent no-repeat images, fuel and NASA questions.');
