@@ -1,3 +1,9 @@
+## Important NASA Image Library filtering update (v1.8)
+
+The source-linked 66 curated Photojournal entries remain the offline baseline. Additional images from NASA's Image and Video Library API are **screened by terrain title, surface-observing camera/instrument, and exclusions for launches, facilities, hardware and cross-world references**. This is necessary because a caption about a lunar *mission* does not imply a photograph of the Moon. For example, NASA image `KSC-2009-3781` shows a rocket launching **from Cape Canaveral, Florida** and is not a Moon terrain question. Old automatically classified v1.7 cache entries are not reused.
+
+New NASA Library records are source-linked, but online metadata filtering is not the same as manual image-by-image review. Please spot-check the final live catalog before the hackathon submission; accuracy is prioritized over reaching 170 images.
+
 # NASA image sources — Planet Impostor v1.7
 
 The game uses **real NASA spacecraft and Earth-observation images as question content**, not decorative art. Each result links to its original NASA Science/Photojournal record and lists the spacecraft/instrument and credit. All external photographs remain hosted by NASA; an internet connection is required. The game does not download or include the imagery in the ZIP.

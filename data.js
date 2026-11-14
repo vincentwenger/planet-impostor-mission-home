@@ -86,13 +86,14 @@ NASA_QUESTIONS.forEach(q=>{
 });
 
 
-// V1.7: expand the hand-curated 66-record Photojournal catalog with additional
+// V1.8: safety-filtered expansion of the hand-curated 66-record Photojournal catalog with additional
 // distinct, source-linked images returned by NASA's public Image and Video Library.
 // NASA API: https://images-api.nasa.gov/search (no API key required).
 // This is progressive enhancement: the original game works if the API is offline.
-// Search metadata is filtered to avoid diagrams, artistic renderings and launch photos.
+// Search metadata requires explicit surface-imaging provenance and rejects launches/hardware.
+// Previous v1.7 auto-classified cache is intentionally NOT trusted or imported.
 const NASA_IMAGE_TARGETS = Object.freeze({Earth:60,Moon:50,Mars:60});
-const NASA_IMAGE_LIBRARY_CACHE_KEY = 'planet-impostor-nasa-library-v1.7';
+const NASA_IMAGE_LIBRARY_CACHE_KEY = 'planet-impostor-nasa-library-v1.8-verified';
 const NASA_IMAGE_QUERIES = Object.freeze({
   Earth: [
     'Terra ASTER volcano', 'Terra ASTER desert', 'NASA satellite glacier landscape',
@@ -117,29 +118,47 @@ const NASA_IMAGE_QUERIES = Object.freeze({
     {term:'Mars crater',page:2},{term:'Martian landscape',page:3}
   ]
 });
-const NASA_LIBRARY_BLOCKED = /\b(artist.?s? (concept|rendition|illustration)|illustration|rendering|animation|diagram|graph|chart|logo|patch|poster|map legend|mission control|launch vehicle|spacecraft assembly|model testing|mockup|computer simulation|selfie|team portrait|microscope|wind tunnel|test stand)\b/i;
-const NASA_LIBRARY_TERRAIN = /\b(surface|terrain|landscape|dune|crater|volcano|volcanic|rock|ridge|canyon|glacier|desert|cliff|mountain|ice|plain|basin|lava|lake|coast|island|valley|regolith|mare|highland|slope|outcrop|erosion|sediment|dust|sand|geolog|satellite|orbiter|panorama|polar|earth observatory|ASTER|Landsat|HiRISE|Mastcam)\b/i;
+// The NASA Image and Video Library is *mission-keyword* searchable, not a
+// ground-truth database of which world is physically depicted. An Atlas rocket
+// launch from Cape Canaveral can mention the Moon, LRO and lunar craters.
+// Never label a candidate by the destination of the mission alone.
+const NASA_LIBRARY_BLOCKED = /\b(artist.?s? (concept|rendition|illustration)|illustration|rendering|animation|diagram|graph|chart|logo|patch|poster|map legend|mission control|launch|launched|liftoff|lift.?off|rocket|atlas v|centaur|space shuttle|cape canaveral|kennedy space center|launch complex|launch pad|flight deck|spacecraft assembly|model testing|mockup|computer simulation|selfie|team portrait|portrait|microscope|wind tunnel|test stand|press conference|ceremony|crew photo|astronaut training|spacecraft hardware)\b/i;
+// An image of terrain needs a geological/landscape subject in the TITLE,
+// not merely a sentence saying the spacecraft will study terrain later.
+const NASA_LIBRARY_TERRAIN_TITLE = /\b(surfaces?|terrain|landscapes?|dunes?|craters?|volcano(?:es)?|volcanic|rocks?|ridges?|canyons?|glaciers?|deserts?|cliffs?|mountains?|ice|plains?|basins?|lava|lakes?|coasts?|islands?|valleys?|regolith|maria|mare|highlands?|slopes?|outcrops?|erosion|sediments?|dust|sand|geolog(?:y|ical)|panoramas?|polar|badlands|salt flats?|shadowed regions?)\b/i;
+// Evidence that a planetary camera actually observed the target's surface.
+// The name of an exploration mission alone is NOT sufficient for inclusion.
+const NASA_LIBRARY_PROVENANCE = {
+  Earth: /\b(ASTER|Landsat|Earth Observatory|Earth-observing|Terra satellite|Aqua satellite|Sentinel-2)\b/i,
+  Moon: /\b(LROC|Lunar Reconnaissance Orbiter Camera|LRO NAC|LRO Narrow Angle Camera|Lunar Orbiter (?:camera|imagery)|Apollo (?:11|12|14|15|16|17)[^.!?]{0,100}(?:lunar surface|on the Moon))\b/i,
+  Mars: /\b(HiRISE|Mastcam(?:-Z)?|Mars Reconnaissance Orbiter.*?(?:image|camera|photograph)|Mars Odyssey.*?(?:image|camera|photograph)|Mars Global Surveyor.*?(?:image|camera|photograph))\b/i
+};
 const NASA_LIBRARY_BODY = {
   Earth: /\b(earth|terrestrial|landsat|terra satellite|aster|our planet)\b/i,
   Moon: /\b(moon|lunar|lro|apollo)\b/i,
   Mars: /\b(mars|martian|curiosity|perseverance|hirise)\b/i
 };
+const NASA_LIBRARY_EARTH_FACILITY = /\b(KSC|Kennedy Space Center|Cape Canaveral|Launch Complex|Vandenberg Space Force Base|Baikonur Cosmodrome|Johnson Space Center|Goddard Space Flight Center|NASA Headquarters)\b/i;
 function nasaCountByWorld(){return Object.fromEntries(Object.keys(NASA_IMAGE_TARGETS).map(w=>[w,NASA_QUESTIONS.filter(q=>q.world===w).length]));}
 function sanitizeNasaCopy(s,max=260){return String(s||'').replace(/<[^>]+>/g,' ').replace(/&(?:nbsp|amp|quot|lt|gt);/gi,m=>({'&nbsp;':' ','&amp;':'&','&quot;':'"','&lt;':'<','&gt;':'>'}[m.toLowerCase()]||m)).replace(/\s+/g,' ').trim().slice(0,max);}
 function nasaAssetToQuestion(item,world){
   const d=item?.data?.[0];
   const identifier=String(d?.nasa_id||'').trim();
   const title=sanitizeNasaCopy(d?.title,110);
-  const description=sanitizeNasaCopy(d?.description||d?.description_508,800);
+  const description=sanitizeNasaCopy(d?.description||d?.description_508,1000);
+  const place=sanitizeNasaCopy(d?.location,110);
   const text=title+' '+description;
-  if(!identifier||!title||!description||!NASA_LIBRARY_BODY[world].test(text))return null;
-  if(NASA_LIBRARY_BLOCKED.test(title)||!NASA_LIBRARY_TERRAIN.test(text))return null;
-  // These searches are intentionally terrain-oriented; photos of hardware or crews
-  // are rejected even if a planet name occurs in their captions.
-  if(/\b(crew|astronaut|launch|rocket|space shuttle|mission patch|prototype|instrument testing|solar array|flight hardware|spacecraft model)\b/i.test(title))return null;
-  if(world==='Moon'&&/\b(Mars rover|Martian|Jupiter|Saturn|Earthrise|Earthset)\b/i.test(title))return null;
-  if(world==='Mars'&&/\b(Moon landing|Earth satellite|lunar surface)\b/i.test(title))return null;
-  if(world==='Earth'&&/\b(Martian|Mars rover|lunar surface|Moon surface|artist)\b/i.test(title))return null;
+  if(!identifier||!title||!description||!NASA_LIBRARY_BODY[world]?.test(text))return null;
+  // Site and launch-archive metadata can discuss the Moon/Mars in detail,
+  // despite depicting a rocket or a control room on Earth.
+  if(/^KSC[-_]/i.test(identifier)||NASA_LIBRARY_EARTH_FACILITY.test(place)||NASA_LIBRARY_BLOCKED.test(text))return null;
+  // Require positive subject evidence and named observing camera/instrument.
+  if(!NASA_LIBRARY_TERRAIN_TITLE.test(title)||!NASA_LIBRARY_PROVENANCE[world].test(text))return null;
+  // Reject cross-world captions: the quiz must ask where the photo was taken,
+  // NOT what celestial object a mission is traveling to or discussing.
+  if(world==='Moon'&&/\b(Mars|Martian|Jupiter|Saturn|Earth|Earthrise|Earthset)\b/i.test(title))return null;
+  if(world==='Mars'&&/\b(Moon|lunar|Earth|Earthrise)\b/i.test(title))return null;
+  if(world==='Earth'&&/\b(Martian|Mars|lunar|Moon|artist)\b/i.test(title))return null;
   const link=(item.links||[]).find(x=>x?.href&&x?.rel==='preview'&&/^https:\/\//.test(x.href))||
     (item.links||[]).find(x=>x?.href&&/^https:\/\//.test(x.href)&&/\.(jpe?g|png|webp)(\?|$)/i.test(x.href));
   if(!link)return null;
@@ -148,7 +167,7 @@ function nasaAssetToQuestion(item,world){
   const id='NASA-LIB-'+identifier;
   const firstSentence=description.split(/(?<=[.!?])\s+(?=[A-Z])/)[0]||description;
   const fact=sanitizeNasaCopy(firstSentence,240)||`NASA captured this ${world} observation.`;
-  return {id,world,name:title,region:sanitizeNasaCopy(d.location,80)||`${world} terrain`,
+  return {id,world,name:title,region:place||`${world} terrain`,
     mission:sanitizeNasaCopy(d.secondary_creator||d.photographer||d.center||'NASA Image and Video Library',95),
     credit:sanitizeNasaCopy(d.secondary_creator||d.photographer||'NASA Image and Video Library',95),
     image,source:'https://images.nasa.gov/details/'+encodeURIComponent(identifier),fact,
@@ -220,5 +239,6 @@ async function expandNasaQuestionLibrary({fetcher,targets,searches}={}){
   }
   return nasaCountByWorld();
 }
-// Restore metadata from a previous online play session without another fetch.
+// Restore only v1.8-filtered metadata; the older v1.7 cache is ignored.
+// This avoids importing photos that were incorrectly labeled by mission keywords.
 if(typeof localStorage!=='undefined')loadCachedNasaLibrary();

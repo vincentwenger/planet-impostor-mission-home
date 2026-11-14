@@ -1,3 +1,7 @@
+## Version 1.8 — NASA image accuracy fix
+
+The live NASA image catalog now requires evidence that an image actually **depicts terrain on the labeled world**. Photos of launches, facilities, portraits or mission hardware are excluded. The prior Version 1.7 automatically labeled cache is invalidated to remove images with unreliable labels. The original 66 curated NASA Photojournal questions remain available; the total number of additional online images may be lower than the 170-photo target because correctness takes priority over quantity. See `CHANGELOG_v1.8.md`.
+
 # Planet Impostor: Mission Home
 
 ## Version 1.7 — NASA image library expansion toward 170 observations
