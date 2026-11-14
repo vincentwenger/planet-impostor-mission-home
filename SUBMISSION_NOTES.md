@@ -31,3 +31,7 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 ## Scientific limitations
 
 The game uses **fictional arcade progress and fuel units**. The difficulty presets vary the simplified fuel budget, speed and setbacks. The model is not a realistic spacecraft engineering simulation. Do not claim realistic orbital propagation or validated delta-v values.
+
+## Version 1.4 progression
+
+Easy is available on first visit. A complete four-leg round trip on Easy unlocks Medium; a complete four-leg round trip on Medium unlocks Hard. Progress saves locally using browser storage (no account or cloud sync).

@@ -2,7 +2,7 @@
 
 **Reunia Space AI | NASA Space Apps Challenge 2026**
 
-A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate your spacecraft **Earth → Moon → Mars → Moon → Earth** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. A single Easy / Medium / Hard difficulty choice automatically sets the mission’s fuel budget, speed and penalties.
+A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate your spacecraft **Earth → Moon → Mars → Moon → Earth** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. Players begin with Easy difficulty; completing all four journeys unlocks Medium, and completing all four on Medium unlocks Hard. Each mode sets the mission’s fuel budget, speed and penalties automatically.
 
 ## Run
 
@@ -20,7 +20,7 @@ The game HTML, CSS, JS and data catalog work locally. **Real NASA question image
 
 ## Gameplay
 
-1. Choose **Easy**, **Medium** or **Hard**. Each mode automatically sets your fuel capacity and how far each correct/wrong answer moves your ship.
+1. Begin on **Easy**. Medium and Hard are locked at first. Completing all four journeys on Easy unlocks Medium; completing all four journeys on Medium unlocks Hard. A full mission win is required to unlock each mode, not just the first landing. Your unlock progress is saved locally in the same browser/device (`localStorage`). Each difficulty sets your fuel capacity and how far each correct/wrong answer moves your ship.
 2. Answer NASA terrain questions over four legs. Earth → Moon and Moon → Earth offer **Earth / Moon** (two choices); Moon → Mars and Mars → Moon offer **Earth / Moon / Mars** (three choices). Keyboard keys 1, 2 and (when available) 3 also work.
 3. Correct guesses move you closer and consume fuel. Wrong guesses move you backward and consume more fuel. Reach 100% to land; run out of fuel before arriving and you fail. If arrival and fuel exhaustion happen on the same answer, arriving wins.
 4. Read a science explanation and open the original source after each answer.
@@ -58,7 +58,7 @@ Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the
 - Live NASA asset requests are needed for full photo gameplay and cannot be tested without network access; try the game in your browser and verify each photo loads before submitting.
 - NASA Photojournal entries can include false/enhanced color, orbital views, and rover close-ups. These differences may hint at the answer. Enhanced-color entries are identified after the reveal.
 - Answers are randomized from the worlds available on each flight leg. The game may reuse some photos on later legs when a question deck has been exhausted.
-- No backend, accounts, multiplayer or persistent global leaderboard.
+- No backend, accounts, multiplayer or persistent global leaderboard. Difficulty unlocks are stored locally in the browser, not synced between devices; clearing site data can reset them.
 - The current mission simulator is arcade-style; judging under **Space Mission Design Game** must clearly explain that the simplified fuel/speed profiles are arcade abstractions, not real mission design calculations. The fit with the official challenge should be evaluated carefully.
 
 ## Mobile app (PWA)
@@ -72,3 +72,7 @@ This release adds mobile-optimized flight telemetry, larger touch controls, home
 Installation is **not supported from a local `file://` page**. You can still run `index.html` directly in a desktop browser for testing, but hosting is needed for mobile home-screen installation and service-worker caching.
 
 This is a web app packaged like a phone game; it is **not yet** an App Store or Google Play native binary. It can be wrapped later using Capacitor if needed.
+
+## Version 1.4
+
+Difficulty progression: Easy available from the start, Medium unlocked by completing the full Easy round trip, Hard unlocked by completing the full Medium round trip. Locked modes are disabled visually and programmatically. Existing gameplay and NASA questions are unchanged.
