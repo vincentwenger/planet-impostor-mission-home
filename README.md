@@ -1,3 +1,13 @@
+## Version 1.10 — Two flights per difficulty, automatic progression
+
+The game is now one **six-flight adventure across three difficulty levels**:
+
+1. **Easy:** Earth → Moon → Mars. Arriving on Mars wins Easy and unlocks Medium.
+2. **Medium:** Mars → Moon → Earth. Arriving on Earth wins Medium and unlocks Hard.
+3. **Hard:** Earth → Moon → Mars. Arriving on Mars wins the final Planet Impostor trophy.
+
+On completing Easy or Medium, the game automatically selects the next difficulty and shows a milestone celebration. Tap **Continue** to launch from the current planet — you **do not** return to the setup screen or have to choose the difficulty manually. Fuel refills at every landing. Returning players can still select any previously unlocked difficulty on the start screen; Medium starts on Mars and Hard starts on Earth. Unlocks remain in local browser storage using the original key. The space-image filter, 66 curated NASA records, optional NASA library expansion, no-repeat history, mobile UI, and fuel rules are unchanged.
+
 ## Version 1.9 — exclude Apollo crew and plaque photographs
 
 The automatic NASA Image and Video Library extension now requires a clearly named surface feature and a surface-imaging instrument. Apollo crew photographs, lunar module interiors, plaques, launch scenes and other non-terrain subjects are excluded. The v1.7/v1.8 auto-library caches are discarded, while saved difficulty unlocks remain. The game can still use its 66 curated observations offline. See [`CHANGELOG_v1.9.md`](CHANGELOG_v1.9.md).
@@ -12,7 +22,7 @@ The live NASA image catalog now requires evidence that an image actually **depic
 
 **Target: 170 different NASA image records (60 Earth / 50 Moon / 60 Mars).** The 66 individually curated NASA Photojournal records are included immediately. When the game runs online, it searches the official NASA Image and Video Library API for up to **104 additional distinct photo records**, filters out illustrations/diagrams/non-terrain material, and caches the approved metadata in the browser. The actual number depends on NASA API availability and search results; only the 66 included records are guaranteed when offline. The setup screen reports the number currently available.
 
-- No new game rules or controls: the four-leg quiz, fuel, difficulty unlocking, and no-repeat cycles remain unchanged.
+- Historical v1.7 release: the four-leg quiz, fuel, difficulty unlocking, and no-repeat cycles were unchanged at the time. See v1.10 above for the current six-leg route.
 - New records retain their NASA ID, original NASA Images page, NASA credit, and science caption.
 - On the first online visit, the catalog expands in the background; the game is playable immediately. Later visits restore the expanded catalog from localStorage.
 - NASA photos are not bundled in the ZIP; they are loaded from official NASA servers. If a remote image cannot load, the existing labeled fallback is shown.
@@ -27,12 +37,12 @@ The live NASA image catalog now requires evidence that an image actually **depic
 - An image is **never repeated** while there is an unused image eligible for the current flight leg. A leg with Earth/Moon choices cycles through 42 photos; a leg with Earth/Moon/Mars choices cycles through all 66. If that leg exhausts its eligible pool, it begins a fresh cycle of those photos.
 - The complete used-photo cycle is saved in the browser across journeys, game restarts, and page reloads. This version carries forward the recent photo history saved by v1.5 where available. Clearing site data resets that history.
 - Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
-- Existing 2/3/3/2 answer choices, Easy→Medium→Hard progression, and all flight mechanics are unchanged.
+- Historical v1.6: the 2/3/3/2 answer-choice pattern was unchanged. Version 1.10 extends it to 2/3/3/2/2/3 for six flights.
 
 
 **Reunia Space AI | NASA Space Apps Challenge 2026**
 
-A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate your spacecraft **Earth → Moon → Mars → Moon → Earth** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. Players begin with Easy difficulty; completing all four journeys unlocks Medium, and completing all four on Medium unlocks Hard. Each mode sets the mission’s fuel budget, speed and penalties automatically.
+A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate **Earth → Moon → Mars (Easy), Mars → Moon → Earth (Medium), then Earth → Moon → Mars (Hard)** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. Players begin with Easy difficulty; arriving on Mars unlocks Medium, returning to Earth unlocks Hard, and finishing on Mars wins the whole adventure. Each mode sets the mission’s fuel budget, speed and penalties automatically.
 
 ## Run
 
@@ -50,13 +60,15 @@ The game HTML, CSS, JS and data catalog work locally. **Real NASA question image
 
 ## Gameplay
 
-1. Begin on **Easy**. Medium and Hard are locked at first. Completing all four journeys on Easy unlocks Medium; completing all four journeys on Medium unlocks Hard. A full mission win is required to unlock each mode, not just the first landing. Your unlock progress is saved locally in the same browser/device (`localStorage`). Each difficulty sets your fuel capacity and how far each correct/wrong answer moves your ship.
-2. Answer NASA terrain questions over four legs. Earth → Moon and Moon → Earth offer **Earth / Moon** (two choices); Moon → Mars and Mars → Moon offer **Earth / Moon / Mars** (three choices). Keyboard keys 1, 2 and (when available) 3 also work.
-3. Correct guesses move you closer and consume fuel. Wrong guesses move you backward and consume more fuel. Reach 100% to land; run out of fuel before arriving and you fail. If arrival and fuel exhaustion happen on the same answer, arriving wins.
-4. Read a science explanation and open the original source after each answer.
-5. Refuel and earn a mission badge at each stop; win on Earth.
+1. Only **Easy** is initially available. Reach Mars via the Moon to complete Easy and unlock Medium. The game automatically switches to Medium without restarting or showing the setup screen.
+2. On **Medium**, travel Mars → Moon → Earth. Reaching Earth unlocks Hard and automatically changes the mission to Hard.
+3. On **Hard**, travel Earth → Moon → Mars. Reaching Mars wins the final Planet Impostor Champion trophy. A short landing/unlock dialog between each flight lets the player continue when ready.
+4. Earth ↔ Moon journeys offer **Earth / Moon** choices. Moon ↔ Mars journeys offer **Earth / Moon / Mars** choices. Keyboard keys 1, 2, and 3 (where relevant) work as before.
+5. Correct guesses move the ship forward; wrong guesses move it backward. Every guess costs fuel. Land to refuel; running out of fuel before arrival loses that flight. Reach 100% on the same answer that depletes fuel and the arrival counts as a win.
+6. The game remembers which NASA images the player has seen and avoids repeats while unused eligible images remain. It also remembers unlocked difficulties across page reloads.
+7. Previously unlocked difficulties remain selectable in the starting menu for replay. Starting directly on Medium begins at **Mars**; starting directly on Hard begins at **Earth**.
 
-Fuel usage and movement are **simplified arcade mechanics**, not actual orbital dynamics, delta-v calculations or flight feasibility. Preset difficulty profiles illustrate mission resource budgeting rather than realistic spacecraft engineering calculations. Future versions can integrate actual trajectory data/mission cost budgets.
+Fuel use and progress are simplified arcade mechanics rather than realistic orbital dynamics, delta-v calculations, or mission feasibility estimates. NASA landscape images are credited to their original source records.
 
 ## NASA sources
 
@@ -105,7 +117,7 @@ This is a web app packaged like a phone game; it is **not yet** an App Store or 
 
 ## Version 1.5
 
-Difficulty progression: Easy available from the start, Medium unlocked by completing the full Easy round trip, Hard unlocked by completing the full Medium round trip. Locked modes are disabled visually and programmatically. Existing gameplay and NASA questions are unchanged.
+Current progression (v1.10): Easy Earth → Moon → Mars unlocks Medium; Medium Mars → Moon → Earth unlocks Hard; Hard Earth → Moon → Mars completes the game. Difficulty switches automatically after each two-flight chapter. Locked modes remain disabled in the setup menu for new players.
 
 ## Version 1.6 — persistent, strict no-repeat photo cycles
 

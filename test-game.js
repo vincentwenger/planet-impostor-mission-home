@@ -34,58 +34,81 @@ assert.equal(get('difficultyOptions').children[1].disabled,true);
 assert.equal(get('difficultyOptions').children[2].disabled,true);
 get('difficultyOptions').children[1].click();assert.equal(state.difficulty,'easy');
 get('difficultyOptions').children[2].click();assert.equal(state.difficulty,'easy');
-function completeFourLegs(){
- get('launchButton').click();assert.equal(state.leg,0);assert.equal(state.status,'quiz');
- for(let leg=0;leg<4;leg++){
-  assert.equal(state.leg,leg);assert.equal(state.status,'quiz');
-  const opts=vm.runInContext('LEGS[state.leg].options',ctx);assert(opts.includes(state.question.world));
-  const expected=leg===0?['Earth','Moon']:leg===3?['Moon','Earth']:['Earth','Moon','Mars'];
-  assert.deepEqual([...opts],expected,`leg ${leg+1} option set`);
-  assert.equal(get('answerButtons').children.length,expected.length,`leg ${leg+1} answer button count`);
-  assert.equal(get('answerButtons').classList.contains('three-choices'),expected.length===3);
-  state.progress=92;state.fuel=80;
-  const q=state.question;const ix=opts.indexOf(q.world);
-  vm.runInContext(`answer(${JSON.stringify(q.world)},document.getElementById('answerButtons').children[${ix}])`,ctx);
-  assert.equal(state.status,'answer');assert(state.progress>=100);
-  get('nextQuestion').click();
-  if(leg<3){assert.equal(state.status,'landing');get('dialogButton').click();assert.equal(state.leg,leg+1);assert.equal(state.status,'quiz')}
-  else {assert.equal(state.status,'landing');assert(get('dialogTitle').textContent.includes('Welcome home'))}
+// Each difficulty is a two-flight chapter in a continuous six-flight campaign.
+const allLegChoices=[
+ ['Earth','Moon'],['Earth','Moon','Mars'],
+ ['Earth','Moon','Mars'],['Moon','Earth'],
+ ['Earth','Moon'],['Earth','Moon','Mars']
+];
+const allLegRoutes=[['Earth','Moon'],['Moon','Mars'],['Mars','Moon'],['Moon','Earth'],['Earth','Moon'],['Moon','Mars']];
+assert.equal(vm.runInContext('LEGS.length',ctx),6);
+assert.equal(get('stageCounter').innerHTML,'0<span>/ 6</span>');
+get('launchButton').click();assert.equal(state.leg,0);assert.equal(state.status,'quiz');
+for(let leg=0;leg<6;leg++){
+ const expectedMode=leg<2?'easy':leg<4?'medium':'hard';
+ assert.equal(state.leg,leg);assert.equal(state.status,'quiz');
+ assert.equal(state.difficulty,expectedMode,'difficulty should switch automatically for each two-flight chapter');
+ const opts=vm.runInContext('LEGS[state.leg].options',ctx);
+ assert.deepEqual([...opts],allLegChoices[leg],`leg ${leg+1} option set`);
+ const route=vm.runInContext('([LEGS[state.leg].from,LEGS[state.leg].to])',ctx);
+ assert.deepEqual([...route],allLegRoutes[leg],`leg ${leg+1} route`);
+ assert.equal(get('answerButtons').children.length,opts.length);
+ assert.equal(get('answerButtons').classList.contains('three-choices'),opts.length===3);
+ assert(get('flightStatus').textContent.includes(expectedMode.toUpperCase()));
+ state.progress=92;state.fuel=80;
+ const q=state.question;const ix=opts.indexOf(q.world);
+ vm.runInContext(`answer(${JSON.stringify(q.world)},document.getElementById('answerButtons').children[${ix}])`,ctx);
+ assert.equal(state.status,'answer');assert(state.progress>=100);
+ get('nextQuestion').click();assert.equal(state.status,'landing');
+ if(leg===0){
+  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1')??null,null,'Moon alone must not unlock Medium');
+ }else if(leg===1){
+  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1','Mars arrival on Easy unlocks Medium');
+  assert.equal(state.difficulty,'medium');assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'));
+  assert(get('dialogButton').innerHTML.includes('CONTINUE ON MEDIUM'));
+ }else if(leg===2){
+  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1','Moon alone must not unlock Hard');
+ }else if(leg===3){
+  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2','Earth arrival on Medium unlocks Hard');
+  assert.equal(state.difficulty,'hard');assert(get('dialogReward').innerHTML.includes('HARD MODE UNLOCKED'));
+  assert(get('dialogButton').innerHTML.includes('CONTINUE ON HARD'));
+ }else if(leg===5){
+  assert(get('dialogTitle').textContent.includes('Champion'),'the Hard chapter should win on Mars');
+  assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');
+ }
+ if(leg<5){
+  get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,leg+1);
+ }else{
+  get('dialogButton').click();assert.equal(state.status,'setup');assert.equal(state.difficulty,'easy');
  }
 }
-completeFourLegs();
-assert.equal(new Set(state.lastIDs).size,state.lastIDs.length,'no recently repeated images within the first mission');
+assert.equal(new Set(state.lastIDs).size,state.lastIDs.length,'no recently repeated images within the campaign');
 assert(saved.has('planet-impostor-recent-photo-ids-v1'),'recent image history saved across sessions');
-assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'1','Easy round trip unlocks Medium');
-assert(get('dialogReward').innerHTML.includes('MEDIUM MODE UNLOCKED'));
-get('dialogButton').click();assert.equal(state.status,'setup');assert.equal(state.difficulty,'medium');
-assert.equal(get('difficultyOptions').children[1].disabled,false);
-assert.equal(get('difficultyOptions').children[2].disabled,true);
-completeFourLegs();
-assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2','Medium round trip unlocks Hard');
-assert(get('dialogReward').innerHTML.includes('HARD MODE UNLOCKED'));
-get('dialogButton').click();assert.equal(state.status,'setup');assert.equal(state.difficulty,'hard');
-assert.equal(get('difficultyOptions').children[2].disabled,false);
-completeFourLegs();
-assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2','Hard victory does not alter rank');
-assert(!get('dialogReward').innerHTML.includes('UNLOCKED'));
-get('dialogButton').click();assert.equal(state.status,'setup');
-// Reloading the page should retain unlock state using localStorage.
+// Reloading keeps unlocks, and selecting an unlocked chapter starts at its correct origin.
 ({get,doc,ctx,state,qbank}=createGame());
-assert.equal(state.difficulty,'easy','Easy remains default for new sessions');
+assert.equal(state.difficulty,'easy');
 assert.equal(get('difficultyOptions').children[1].disabled,false,'Medium persisted');
 assert.equal(get('difficultyOptions').children[2].disabled,false,'Hard persisted');
 get('difficultyOptions').children[1].click();assert.equal(state.difficulty,'medium');
-// Keys 1/2/3 work only for three-choice legs, including after unlocking.
-for(const legIndex of [1,2]){
+assert.equal(get('sceneFrom').textContent,'MARS');
+get('launchButton').click();assert.equal(state.leg,2);assert.equal(state.status,'quiz');
+vm.runInContext('resetGame()',ctx);
+get('difficultyOptions').children[2].click();assert.equal(state.difficulty,'hard');
+assert.equal(get('sceneFrom').textContent,'EARTH');
+get('launchButton').click();assert.equal(state.leg,4);
+// Keys 1/2/3 work only for three-choice flights.
+for(const legIndex of [1,2,5]){
  vm.runInContext(`startLeg(${legIndex})`,ctx);
  state.question=qbank.find(q=>q.world==='Mars');
  assert.equal(get('answerButtons').children.length,3);
  doc.listeners.keydown({key:'3'});
  assert.equal(state.status,'answer');
 }
-vm.runInContext('startLeg(0)',ctx);
-doc.listeners.keydown({key:'3'});assert.equal(state.status,'quiz');
-// Failure never changes unlock progression.
+for(const legIndex of [0,3,4]){
+ vm.runInContext(`startLeg(${legIndex})`,ctx);
+ doc.listeners.keydown({key:'3'});assert.equal(state.status,'quiz');
+}
+// Failure does not reset earned difficulty unlocks.
 vm.runInContext('resetGame()',ctx);
 get('launchButton').click();state.fuel=1;state.progress=0;
 const wrong=state.question.world==='Earth'?'Moon':'Earth';
@@ -166,4 +189,4 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  for(let i=0;i<43;i++)choose(game,0);
  for(const id of marsBefore)assert(game.state.usedPhotoIDs.has(id),'Earth/Moon recycling erased Mars history');
 }
-console.log('PASS — v1.6 strict persistent no-repeat cycles, 66-image and 42-image exhaustion, migration, difficulty unlocks, NASA questions, 4 legs and fuel gameplay.');
+console.log('PASS — v1.10 automatic Easy → Medium → Hard 6-flight campaign, persistent no-repeat image cycles, NASA questions and fuel gameplay.');

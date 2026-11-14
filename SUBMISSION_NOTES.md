@@ -1,3 +1,7 @@
+## Version 1.10 mission progression (current)
+
+The current game spans six journeys with one automatically advancing difficulty per pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard awards the final victory. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. When recording the 30-second demonstration, show the Easy victory on Mars and automatic handoff to Medium.
+
 ## v1.9 NASA image quality
 
 The game is a landscape-identification quiz, so crew portraits, mission plaques, spacecraft interiors, and launches are not valid questions. Automatic NASA Library records now require surface-landform metadata and imaging-instrument provenance, with previous cached entries discarded. The total may fall short of 170; do not describe that as 170 individually verified photographs. See `CHANGELOG_v1.9.md` for limitations and test evidence.
@@ -33,7 +37,7 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 - 5–11s: NASA landscape identification (two choices on Earth–Moon legs, three on Moon–Mars legs)
 - 11–17s: ship moves, fuel meter drops, explanation and citation
 - 17–22s: moon landing, badge and refill
-- 22–27s: show Mars leg and return-to-Earth map
+- 22–27s: reach Mars on Easy, show Medium unlock and automatic continuation
 - 27–30s: project name, educational goal, public game URL
 
 ## AI acknowledgment suggested text
@@ -46,7 +50,7 @@ The game uses **fictional arcade progress and fuel units**. The difficulty prese
 
 ## Version 1.5 progression
 
-Easy is available on first visit. A complete four-leg round trip on Easy unlocks Medium; a complete four-leg round trip on Medium unlocks Hard. Progress saves locally using browser storage (no account or cloud sync).
+Historical v1.5: each difficulty originally required a four-leg round trip. **Current v1.10:** each difficulty lasts two legs, and progress automatically continues on the next difficulty (with a Continue button after the milestone). Progress saves locally using browser storage.
 
 
 ## Version 1.5 — more NASA images, fewer repeats
