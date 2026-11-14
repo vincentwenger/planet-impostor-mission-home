@@ -1,4 +1,4 @@
-## Current gameplay — Version 1.13
+## Current gameplay — Version 1.14 (same rules as v1.13)
 
 Each difficulty uses the same **Earth → Moon → Mars → Earth** three-flight circuit. The campaign starts on Easy; returning to Earth from Mars unlocks Medium, returning to Earth on Medium unlocks Hard, and returning to Earth on Hard unlocks endless Insane. The complete main campaign consists of **nine flights**. At each difficulty milestone, a landing/unlock overlay lets the player continue immediately from Earth with a full tank. Insane then repeats the same Earth → Moon → Mars → Earth loop indefinitely, starting from Earth.
 
@@ -8,9 +8,20 @@ These game rules are **arcade abstractions**, not actual NASA orbital dynamics o
 
 ---
 
+## Version 1.14 — presentation-only release
+
+The mission rules, score thresholds, NASA questions, no-repeat cycles and saved
+unlocks are unchanged from v1.13. New visual presentation: procedurally
+illustrated planet textures, animated starfield/nebula and trajectory, ship
+exhaust and contrail, floating score feedback, new arrival effects and a distinct
+Insane-mode palette. The three new planet artworks are decorative code-rendered
+assets and should not be described as NASA images. The authentic NASA landscape
+photographs remain unmodified in the quiz display. Animations can be suppressed
+using the system-level reduced-motion setting.
+
 ## Version 1.10 mission progression (historical)
 
-Version 1.10 introduced six journeys, with an automatic difficulty handoff after each pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard unlocks endless Insane survival mode. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. For the current v1.13 demonstration, show the **Mars → Earth** final Easy flight and the Medium unlock on Earth (not Mars).
+Version 1.10 introduced six journeys, with an automatic difficulty handoff after each pair of legs: Easy Earth → Moon → Mars; Medium Mars → Moon → Earth; Hard Earth → Moon → Mars. Landing on Mars at the end of Easy unlocks Medium; landing on Earth at the end of Medium unlocks Hard; landing on Mars at the end of Hard unlocks endless Insane survival mode. A landing/unlock overlay allows players to continue without revisiting the setup screen. The same NASA source credits, image-selection rules and simplified fuel mechanics apply. For the current v1.14 demonstration, show the **Mars → Earth** final Easy flight and the Medium unlock on Earth (not Mars).
 
 ## v1.9 NASA image quality
 
@@ -35,9 +46,9 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 - **Project Demonstration:** A public video **30 seconds or less** OR a public presentation of **7 slides or fewer**. Link must work without login.
 - **Project:** Public URL of playable deployed site (can also link public code repository).
 - **Project Details:** Gameplay, design process, engineering trade-offs, real NASA images, audience, limitations, tech stack.
-- **Use of Super Intelligence:** Disclose use of OpenAI ChatGPT for code development. Any future SI-generated imagery must receive the requested visible watermark; none is shipped in this version.
+- **Use of Super Intelligence:** Disclose use of OpenAI ChatGPT for code development. This release includes original procedural planet illustrations created by ChatGPT-assisted code, not NASA planet photographs or diffusion-generated images. Review the event rules for labeling or watermarking of SI-assisted visual work.
 - **NASA Data:** Cite the NASA Photojournal and mission/instrument pages from NASA_SOURCES.md, and **Design and Develop Science Missions** from the selected challenge's Resources tab; verify its exact inclusion on the official event page and accurately explain how it informed the game architecture.
-- **Space Agency Partner & Other Data:** Credit any other APIs, packages, visual assets, audio and fonts actually used. This version has zero runtime dependencies or commercial assets.
+- **Space Agency Partner & Other Data:** Credit any other APIs, packages, visual assets, audio and fonts actually used. This version has no runtime dependencies or commercial visual assets. Three original transparent WebP planet illustrations ship locally.
 - **Terms and originality checkboxes:** Only check after verifying third-party resources and accuracy.
 - **Save Progress** during editing; then **Submit for Judging** before the event deadline.
 
@@ -52,7 +63,7 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 
 ## AI acknowledgment suggested text
 
-> OpenAI ChatGPT was used as a code-development assistant for HTML, CSS, JavaScript and editorial text. The images presented in the questions link to authentic NASA Photojournal records and are not AI-generated. Code-drawn spaceship and planet illustrations are stylized and not NASA imagery.
+> OpenAI ChatGPT was used as a code-development assistant for HTML, CSS, JavaScript and editorial text. The images presented in the questions link to authentic NASA Photojournal records and are not AI-generated. The spaceship is an SVG/CSS illustration; Earth, Moon and Mars artwork is original procedurally rendered imagery generated with ChatGPT-assisted Python code. These visuals are decorative and not NASA imagery.
 
 ## Scientific limitations
 
@@ -60,7 +71,7 @@ The game uses **fictional arcade progress and fuel units**. The difficulty prese
 
 ## Version 1.5 progression
 
-Historical v1.5: each difficulty originally required a four-leg round trip. Historical v1.10–v1.12: each chapter had two legs and automatic progression at its final landing. **Current v1.13:** each difficulty lasts three legs and the next mode unlocks on returning to Earth, with a Continue dialog and locally saved unlock progress.
+Historical v1.5: each difficulty originally required a four-leg round trip. Historical v1.10–v1.12: each chapter had two legs and automatic progression at its final landing. **Current v1.14 (unchanged from v1.13):** each difficulty lasts three legs and the next mode unlocks on returning to Earth, with a Continue dialog and locally saved unlock progress.
 
 
 ## Version 1.5 — more NASA images, fewer repeats
@@ -70,7 +81,7 @@ Historical v1.5: each difficulty originally required a four-leg round trip. Hist
 - The same question is not intentionally repeated across the four flight legs until the eligible question catalog has been exhausted.
 - Recent image history is stored locally in the browser to reduce repeats between replay sessions on the same device. Clearing site data resets that history.
 - Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
-- Historical note: earlier releases used 2/3/3/2 choices; v1.13 uses two choices on every flight and adds Mars / Earth questions.
+- Historical note: earlier releases used 2/3/3/2 choices; v1.14 uses two choices on every flight and adds Mars / Earth questions.
 
 ## Version 1.6 — question variety
 

@@ -32,6 +32,34 @@ The live NASA image catalog now requires evidence that an image actually **depic
 
 # Planet Impostor: Mission Home
 
+## Version 1.14 — Cinematic Graphics Upgrade
+
+This release **only changes presentation**. Gameplay remains the Version 1.13 design:
+Easy, Medium and Hard each fly Earth → Moon → Mars → Earth; Insane repeats the
+same three-flight route indefinitely. All four difficulties retain their
+question choices, NASA image selection, persistent no-repeat rules, fuel
+consumption, score and unlock thresholds.
+
+- High-detail, original **procedurally illustrated** Earth, Moon and Mars
+  textures (three tiny transparent WebP assets) with atmosphere/rim lighting,
+  crater shading and Martian surface detail. These are decorative artwork,
+  **not NASA photographic observations**.
+- Animated, multi-layer starfields, slow nebula drift and occasional meteors,
+  all without external graphics frameworks or runtime libraries.
+- Refined spacecraft illustration with luminous plasma exhaust, glowing
+  contrail, animated flight trajectory and smooth positional movement.
+- Correct/incorrect answer effects, animated floating point awards, and
+  destination landing pulses. Quiz photography is never recolored or distorted.
+- Cinematic arrival dialogs with optional celebratory particle effects,
+  brighter interactive controls and gentle HUD meter highlights.
+- Distinct, higher-energy red/orange styling for Insane mode.
+- Reduced-motion behavior and compact mobile layout are retained.
+- The PWA service worker now includes all three new planet artworks in its
+  updated v1.14 cache.
+
+See [`CHANGELOG_v1.14.md`](CHANGELOG_v1.14.md) for change details and limitations.
+
+
 ## Version 1.7 — NASA image library expansion toward 170 observations
 
 **Target: 170 different NASA image records (60 Earth / 50 Moon / 60 Mars).** The 66 individually curated NASA Photojournal records are included immediately. When the game runs online, it searches the official NASA Image and Video Library API for up to **104 additional distinct photo records**, filters out illustrations/diagrams/non-terrain material, and caches the approved metadata in the browser. The actual number depends on NASA API availability and search results; only the 66 included records are guaranteed when offline. The setup screen reports the number currently available.
@@ -94,7 +122,8 @@ The image display uses an image delivery URL pattern from NASA Science assets; i
 ## Files
 
 - `index.html`: screens and UI
-- `style.css`: responsive styling, space scene, spacecraft, planets and HUD
+- `style.css`: responsive styling, animated starfield/space scene, spacecraft, planetary glow and HUD
+- `assets/planet-{earth,moon,mars}.webp`: original procedurally generated decorative planet artwork (not NASA images)
 - `game.js`: gameplay state and mission logic
 - `data.js`: curated NASA sources plus online NASA image library expansion (v1.7)
 - `NASA_SOURCES.md`: full image credits and source links
@@ -108,7 +137,7 @@ Other static hosts work: Cloudflare Pages, Netlify, AWS S3 + CloudFront, etc. Do
 
 ## Credits and disclosure
 
-Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the assistance of **OpenAI ChatGPT**. Source NASA terrain photos are **not AI-generated**. Planet and ship visuals are code-drawn illustrations. There are no external code dependencies, commercial game assets or embedded music. The question explanations are original short summaries of NASA descriptions and require source review before formal publication. NASA does not endorse or sponsor this specific game.
+Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the assistance of **OpenAI ChatGPT**. Source NASA terrain photos are **not AI-generated**. Planet visuals are original procedurally rendered illustrations made with Python code assisted by ChatGPT; the spaceship is an original SVG/CSS illustration. They are not NASA photographs. There are no external code dependencies, commercial game assets or embedded music. The question explanations are original short summaries of NASA descriptions and require source review before formal publication. NASA does not endorse or sponsor this specific game.
 
 ## Known limitations
 
@@ -132,7 +161,7 @@ This is a web app packaged like a phone game; it is **not yet** an App Store or 
 
 ## Version 1.5
 
-Current progression (v1.13): Easy, Medium, and Hard each follow Earth → Moon → Mars → Earth and unlock the next difficulty only on returning to Earth. This creates a nine-flight campaign. Insane then repeats the same three-flight cycle endlessly. Locked modes remain disabled in the setup menu for new players.
+Current progression (v1.14, unchanged since v1.13): Easy, Medium, and Hard each follow Earth → Moon → Mars → Earth and unlock the next difficulty only on returning to Earth. This creates a nine-flight campaign. Insane then repeats the same three-flight cycle endlessly. Locked modes remain disabled in the setup menu for new players.
 
 ## Version 1.6 — persistent, strict no-repeat photo cycles
 

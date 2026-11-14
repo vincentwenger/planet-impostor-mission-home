@@ -78,3 +78,201 @@ body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inse
 .mission-record>div:first-child strong{font-size:clamp(13px,1.55vw,21px);overflow-wrap:anywhere}
 @media (max-width:620px){.select-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.pick-card{min-height:90px;padding:12px}}
 .score-hint{color:#b8fc65;font-size:11px;font-weight:800;letter-spacing:.045em;line-height:1.5;margin:-7px 0 14px}
+
+
+/* v1.14 — CINEMATIC VISUAL UPGRADE. Original procedural planet artwork.
+   Decoration only: no changes to NASA terrain images, answer choices or game rules. */
+body{
+  background:
+    radial-gradient(ellipse at 10% 3%, rgba(37,90,146,.32), transparent 42%),
+    radial-gradient(ellipse at 90% 72%, rgba(67,37,114,.25), transparent 47%),
+    radial-gradient(ellipse at 45% 95%, rgba(10,71,102,.25), transparent 50%), #050d19;
+}
+body::before{
+  content:"";position:fixed;inset:-20%;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 18% 26%,#3b6cd51c,transparent 37%),radial-gradient(ellipse at 84% 63%,#763e971a,transparent 40%);
+  filter:blur(24px);animation:ambientDrift 32s ease-in-out infinite alternate;
+}
+@keyframes ambientDrift{from{transform:translate3d(-3%,0,0) rotate(-4deg)}to{transform:translate3d(3%,2%,0) rotate(4deg)}}
+.app-shell{position:relative;z-index:1}
+#stars{z-index:0;opacity:.6}
+.topbar{position:relative}
+.brand-logo{background:radial-gradient(circle at 50% 50%,#aefa752c,transparent 68%);animation:logoHalo 3.8s ease-in-out infinite alternate}
+@keyframes logoHalo{to{box-shadow:0 0 34px #b8fc6540,inset 0 0 12px #b8fc6525}}
+.panel{background:linear-gradient(145deg,rgba(16,34,55,.95),rgba(6,20,36,.96));border-color:#304b66;box-shadow:0 20px 80px #0005,inset 0 1px #ecf9ff0a}
+.flight-panel{position:relative}
+.space-scene{
+  isolation:isolate;
+  border-color:#396785;
+  background:radial-gradient(ellipse at 46% 38%,#18415e 0%,#091f39 37%,#050f21 72%,#040912 100%);
+  box-shadow:inset 0 0 80px #02060ccb,0 12px 36px #0007,0 0 0 1px #8fcbf00a;
+}
+.space-scene::before{z-index:0;opacity:.16;animation:sceneStarShift 80s linear infinite}
+.space-scene::after{z-index:4;background:linear-gradient(to bottom,#02081488,transparent 22%,transparent 72%,#03091bab);}
+.scene-nebula{position:absolute;inset:-30%;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 30% 42%,#4374ad47 0%,transparent 38%),radial-gradient(ellipse at 82% 66%,#8156a028 0%,transparent 40%),radial-gradient(ellipse at 50% 15%,#1b6f9e33,transparent 44%);
+  filter:blur(19px);opacity:.78;animation:nebulaBreath 24s ease-in-out infinite alternate;
+}
+.scene-stars{position:absolute;inset:-20%;z-index:1;pointer-events:none;background-repeat:repeat;will-change:transform}
+.scene-stars-far{
+  background-image:radial-gradient(circle,#b9d9fb 1px,transparent 1.8px),radial-gradient(circle,#fff .65px,transparent 1.3px),radial-gradient(circle,#78d5ff 1px,transparent 2px);
+  background-size:83px 87px,137px 109px,173px 157px;
+  background-position:10px 9px,58px 64px,115px 21px;
+  opacity:.4;animation:starCruise 95s linear infinite;
+}
+.scene-stars-near{
+  background-image:radial-gradient(circle,#f2fbff 1px,transparent 2px),radial-gradient(circle,#c0e8ff 1.4px,transparent 2.8px);
+  background-size:218px 193px,322px 279px;background-position:30px 53px,173px 139px;
+  opacity:.65;animation:starCruise 44s linear infinite reverse,starTwinkle 4.1s ease-in-out infinite alternate;
+}
+@keyframes sceneStarShift{to{background-position:390px 85px,-150px 120px}}
+@keyframes starCruise{to{transform:translate3d(-8%,4%,0)}}
+@keyframes starTwinkle{from{opacity:.28}to{opacity:.66}}
+@keyframes nebulaBreath{to{transform:translate3d(7%,2%,0) scale(1.12);opacity:.98}}
+.scene-meteor{position:absolute;z-index:1;pointer-events:none;left:110%;top:12%;width:116px;height:1px;
+  transform:rotate(-31deg);background:linear-gradient(90deg,transparent,#8cdfff55,#f3ffff);
+  filter:drop-shadow(0 0 6px #a2d6ff);opacity:0;animation:meteorPass 17s linear infinite 3s;
+}
+@keyframes meteorPass{0%,72%{left:110%;top:12%;opacity:0}73%{opacity:.68}82%{left:-22%;top:67%;opacity:0}100%{opacity:0}}
+.path-svg{z-index:1}
+.flight-route-halo{stroke:#4bc9ff;stroke-width:10;stroke-opacity:.11;filter:blur(6px)}
+.flight-route{stroke:#a2ddff;stroke-width:2;stroke-opacity:.58;animation:routeFlow 12s linear infinite}
+@keyframes routeFlow{to{stroke-dashoffset:-228}}
+.planet{background:transparent!important;box-shadow:none!important;overflow:visible;isolation:isolate}
+.planet-earth{--planet-art:url('assets/planet-earth.webp');--planet-glow:#5acbff55;--planet-rim:#91dcff77}
+.planet-moon{--planet-art:url('assets/planet-moon.webp');--planet-glow:#c4d4ff3d;--planet-rim:#e4e8ff6a}
+.planet-mars{--planet-art:url('assets/planet-mars.webp');--planet-glow:#ff81445a;--planet-rim:#ffae8a75}
+.planet::before{content:"";position:absolute;inset:-9%;border-radius:50%;z-index:0;
+  background-image:var(--planet-art);background-size:100% 100%;background-position:center;
+  filter:drop-shadow(0 0 17px var(--planet-glow));
+  animation:planetDrift 7s ease-in-out infinite alternate;
+}
+.planet::after{content:"";position:absolute;inset:-21%;border:1px solid var(--planet-rim);border-radius:50%;z-index:-1;
+  opacity:.52;box-shadow:0 0 15px var(--planet-glow),inset 0 0 12px var(--planet-glow);
+  animation:planetBeacon 4.2s ease-in-out infinite;
+}
+.planet-name{z-index:2;white-space:nowrap;text-shadow:0 0 10px #0d183a,0 2px 7px #000;font-size:11px;letter-spacing:.21em}
+@keyframes planetDrift{to{transform:translateY(-5px) rotate(3deg) scale(1.025)}}
+@keyframes planetBeacon{50%{transform:scale(1.10);opacity:.20}}
+.ship{filter:drop-shadow(0 0 10px #4dc3ffbf) drop-shadow(0 3px 5px #0009);z-index:3;
+  transition:left .84s cubic-bezier(.16,.8,.25,1),top .84s cubic-bezier(.16,.8,.25,1);
+}
+.ship::before{content:"";position:absolute;right:83%;top:43%;height:23px;width:96px;transform:translateY(-50%);z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,#3b7dff05 15%,#4ac3ff55 58%,#a0eeffb8 95%);
+  clip-path:polygon(0 39%,100% 0,100% 100%,0 61%);filter:blur(7px);
+  animation:engineWake .68s ease-in-out infinite alternate;
+}
+.ship svg{filter:drop-shadow(0 0 3px #b0ebff77);animation:shipFloat 3s ease-in-out infinite alternate}
+.ship-flame{transform-origin:22px 39px;animation:plasmaPulse .22s ease-in-out infinite alternate;filter:drop-shadow(0 0 9px #4ab6ff)}
+.plasma-halo{transform-origin:22px 39px;animation:plasmaPulse .42s ease-in-out infinite alternate-reverse}
+.plasma-core{transform-origin:22px 39px;animation:plasmaPulse .18s ease-in-out infinite alternate}
+@keyframes shipFloat{to{transform:translateY(-2px) rotate(.6deg)}}
+@keyframes plasmaPulse{to{transform:scaleX(.55) scaleY(1.17);opacity:.75}}
+@keyframes engineWake{to{opacity:.48;transform:translateY(-50%) scaleX(.78)}}
+.scene-flash{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0}
+.scene-score-pop{position:absolute;z-index:6;pointer-events:none;opacity:0;
+  font-size:clamp(16px,2vw,27px);font-weight:950;letter-spacing:.03em;white-space:nowrap;
+  color:#dcff9f;text-shadow:0 0 14px #b8fc65b0,0 2px 7px #000;
+  transform:translate(-50%,-50%);
+}
+.space-scene.fx-correct .scene-flash{background:radial-gradient(ellipse at center,#8bd9ff44,transparent 72%);animation:fxFlash .9s ease-out both}
+.space-scene.fx-wrong .scene-flash{background:radial-gradient(ellipse at center,#f3484e55,transparent 75%);animation:fxFlash .86s ease-out both}
+.space-scene.fx-launch .scene-flash{background:radial-gradient(ellipse at 16% 52%,#7ae2ff55,transparent 70%);animation:fxFlash .8s ease-out both}
+.space-scene.fx-landing .scene-flash{background:radial-gradient(ellipse at 82% 52%,#9effb255,transparent 68%);animation:fxLanding 1.2s ease-out both}
+.space-scene.fx-correct .scene-score-pop{animation:scoreRise 1.2s cubic-bezier(.2,.6,.3,1) both}
+.space-scene.fx-correct .ship::before{width:155px;filter:blur(8px);opacity:1}
+.space-scene.fx-correct .ship svg{animation:shipBoost .44s ease-in-out 1}
+.space-scene.fx-wrong .ship svg{animation:shipShake .55s ease-in-out 1}
+.space-scene.fx-wrong{border-color:#ec6368;box-shadow:inset 0 0 45px #d5374e3c,0 12px 36px #0007}
+.space-scene.fx-landing #planetEnd::after{opacity:1;animation:planetArrival 1.1s ease-out both}
+.space-scene.fx-landing #planetEnd::before{animation:planetTouchdown 1.1s ease-in-out both}
+@keyframes planetArrival{0%{transform:scale(.82);opacity:.15}55%{transform:scale(1.26);opacity:.95}100%{transform:scale(1);opacity:.52}}
+@keyframes planetTouchdown{50%{transform:scale(1.13)}}
+@keyframes fxFlash{0%{opacity:0}23%{opacity:1}100%{opacity:0}}
+@keyframes fxLanding{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+@keyframes scoreRise{0%{opacity:0;transform:translate(-50%,0) scale(.72)}18%{opacity:1;transform:translate(-50%,-38%) scale(1.14)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-135%) scale(.96)}}
+@keyframes shipBoost{0%,100%{transform:scale(1)}40%{transform:scale(1.17) translateX(3px)}}
+@keyframes shipShake{0%,100%{transform:translateX(0) rotate(0)}18%{transform:translate(-5px,2px) rotate(-4deg)}38%{transform:translate(5px,-2px) rotate(3deg)}60%{transform:translate(-3px,1px) rotate(-2deg)}}
+.meter{position:relative;box-shadow:inset 0 1px 4px #01060d}
+.meter-fill{position:relative;box-shadow:0 0 9px currentColor;transition:width .84s cubic-bezier(.16,.8,.25,1)}
+.meter-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,#ffffff28 40%,#ffffff5b 50%,transparent 66%);background-size:180px 100%;animation:meterShine 2.5s linear infinite}
+@keyframes meterShine{to{background-position:360px 0}}
+.mission-record{background:linear-gradient(135deg,#0e2941,#091c2d);border-color:#31516a;box-shadow:inset 0 1px #ffffff0b}
+.mission-record strong{color:#e7f8ff;text-shadow:0 0 15px #7bc0ff12}
+.quiz-panel{position:relative}
+.primary-button{position:relative;overflow:hidden;box-shadow:0 7px 23px #9acb5536;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.primary-button:hover{transform:translateY(-2px);box-shadow:0 10px 33px #9acb554b;filter:brightness(1.06)}
+.primary-button:active{transform:translateY(0) scale(.99)}
+.pick-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.pick-card:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 8px 22px #0005}
+.answer-option{position:relative;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.answer-option:hover:not(:disabled){box-shadow:0 0 20px #5ad4ff1c, inset 0 0 12px #5ad4ff0d}
+.answer-option.success{box-shadow:inset 0 0 21px #9eff5c17,0 0 17px #92ee5320;animation:answerConfirm .46s ease-out}
+.answer-option.failure{box-shadow:inset 0 0 22px #ff5e571d;animation:answerReject .35s ease-out}
+@keyframes answerConfirm{35%{transform:scale(1.045)}}
+@keyframes answerReject{25%,75%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+.photo-frame{border-color:#4b7794;box-shadow:0 12px 30px #0005,inset 0 0 40px #0007}
+.photo-noise{background:linear-gradient(to bottom,#0613269a,transparent 17%,transparent 75%,#061326be)}
+.photo-reticle{position:absolute;inset:9px;pointer-events:none;z-index:2;opacity:.7;
+  background:linear-gradient(#9be6ff,#9be6ff) left top / 17px 2px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) left top / 2px 17px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) right top / 17px 2px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) right top / 2px 17px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) left bottom / 17px 2px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) left bottom / 2px 17px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) right bottom / 17px 2px no-repeat,
+             linear-gradient(#9be6ff,#9be6ff) right bottom / 2px 17px no-repeat;
+}
+.photo-frame img{animation:photoLink .55s ease-out both}
+@keyframes photoLink{from{opacity:.45}to{opacity:1}}
+.overlay{background:#01060cdb;backdrop-filter:blur(11px)}
+.dialog{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 50% -20%,#2e5672,#102c45 45%,#0a1c30 100%);
+  border-color:#547a97;box-shadow:0 30px 100px #000d,0 0 65px #3d91bb18;
+  animation:dialogEntrance .45s cubic-bezier(.2,.8,.25,1) both}
+.dialog::before{content:"";position:absolute;inset:-30%;z-index:-1;pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0 55deg,#b8fc6512 70deg,transparent 85deg,transparent 165deg,#5ce1ff12 180deg,transparent 200deg,transparent 360deg);
+  animation:celebrateSpin 16s linear infinite}
+.dialog-icon{position:relative;z-index:1;filter:drop-shadow(0 0 22px #ffda775f);animation:trophyPop .8s cubic-bezier(.2,.8,.2,1) both}
+.dialog-sparks{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;display:none}
+.is-celebration .dialog-sparks{display:block}
+.dialog-sparks i{position:absolute;top:28%;left:50%;width:5px;height:14px;border-radius:3px;background:#b8fc65;box-shadow:0 0 8px currentColor;
+  animation:particleBurst 1.35s ease-out both}
+.dialog-sparks i:nth-child(2){--x:-145px;--y:-65px;background:#63e7fa;animation-delay:.12s}
+.dialog-sparks i:nth-child(3){--x:138px;--y:-44px;background:#ffd888;animation-delay:.04s}
+.dialog-sparks i:nth-child(4){--x:-112px;--y:72px;background:#e8b2ff;animation-delay:.16s}
+.dialog-sparks i:nth-child(5){--x:118px;--y:89px;background:#94f8d3;animation-delay:.08s}
+.dialog-sparks i:nth-child(6){--x:36px;--y:-130px;background:#82d4ff;animation-delay:.18s}
+.dialog-sparks i:nth-child(7){--x:-58px;--y:-114px;background:#f7ee8e;animation-delay:.03s}
+.dialog-sparks i:nth-child(8){--x:153px;--y:27px;background:#ffd0af;animation-delay:.1s}
+.dialog-sparks i:nth-child(1){--x:-170px;--y:4px}
+@keyframes particleBurst{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(360deg)}}
+@keyframes celebrateSpin{to{transform:rotate(360deg)}}
+@keyframes trophyPop{0%{transform:scale(.6) translateY(10px);opacity:0}65%{transform:scale(1.14)}100%{transform:scale(1);opacity:1}}
+@keyframes dialogEntrance{from{opacity:0;transform:translateY(25px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.is-failure .dialog{border-color:#c85f65;box-shadow:0 30px 100px #000d,0 0 50px #ef4b4c25}
+.is-failure .dialog::before{background:radial-gradient(circle at 50% 0%,#cf4f4f30,transparent 60%);animation:none}
+/* Insane has a deliberately distinct high-energy HUD; correct answers remain green. */
+body.mode-insane .flight-panel{border-color:#824958;box-shadow:0 24px 72px #b02d3519}
+body.mode-insane .space-scene{border-color:#a94f5d;background:radial-gradient(ellipse at 53% 40%,#47233b 0%,#2b1d35 36%,#0e1023 83%);box-shadow:inset 0 0 58px #f2553f23,0 15px 36px #0008}
+body.mode-insane .scene-nebula{background:radial-gradient(ellipse at 30% 42%,#fb5c6546,transparent 40%),radial-gradient(ellipse at 82% 66%,#ed82343f,transparent 42%)}
+body.mode-insane .flight-route{stroke:#ffaa8b;stroke-opacity:.76;animation-duration:5s}
+body.mode-insane .flight-route-halo{stroke:#ff694e;stroke-opacity:.2}
+body.mode-insane .scene-stars-far{animation-duration:45s}
+body.mode-insane .scene-stars-near{animation-duration:19s,2.2s}
+body.mode-insane .stage-counter,body.mode-insane .flight-header h1 span{color:#ffad82}
+body.mode-insane .live-dot{background:#ff785b;box-shadow:0 0 15px #ff6d56}
+body.mode-insane .progress-fill{background:linear-gradient(90deg,#f55d6a,#ffb873)}
+body.mode-insane .score-hint{color:#ffc78e}
+body.mode-insane .ship::before{filter:blur(8px) hue-rotate(-30deg)}
+@media(max-width:660px){
+  .scene-nebula{filter:blur(12px)}.planet::after{inset:-24%}
+  .ship::before{width:57px;height:14px;filter:blur(4px)}
+  .scene-score-pop{font-size:15px}.photo-reticle{inset:6px;opacity:.6}
+  .dialog-sparks i{height:10px;width:4px}
+  .space-scene{box-shadow:inset 0 0 34px #02060ccb,0 8px 25px #0007}
+}
+@media(prefers-reduced-motion:reduce){
+  .scene-stars,.scene-nebula,.scene-meteor,.ship svg,.ship::before,.planet::before,.planet::after,.flight-route,.dialog::before,.dialog-icon,.dialog-sparks i,body::before,.meter-fill::after{animation:none!important}
+  .ship,.meter-fill,.primary-button,.answer-option{transition:none!important}
+  .space-scene.fx-correct .scene-flash,.space-scene.fx-wrong .scene-flash,.space-scene.fx-landing .scene-flash,.space-scene.fx-launch .scene-flash{animation:none!important;opacity:0}
+}

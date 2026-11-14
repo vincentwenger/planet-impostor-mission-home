@@ -85,6 +85,7 @@ function makeOptionCards(container,choices,selected,onSelect){
   });
 }
 function drawSetup(){
+  setVisualMode();
   if(!isUnlocked(state.difficulty))state.difficulty='easy';
   makeOptionCards('difficultyOptions',DIFFICULTY,state.difficulty,key=>{state.difficulty=key;drawSetup()});
   const d=DIFFICULTY[state.difficulty];
@@ -103,10 +104,27 @@ function formatScore(num){
   return num.toExponential(2);
 }
 function insaneAward(streak){return Math.min(Number.MAX_VALUE,Math.round(DIFFICULTY.insane.points*Math.pow(INSANE_POINT_GROWTH,streak-1)))}
+// v1.14 visual-only cues. The mission state, score, NASA photo selection and fuel are unchanged.
+function setVisualMode(){
+  const mode=state.difficulty;
+  if(!document.body || !document.body.classList)return;
+  DIFFICULTY_ORDER.forEach(name=>document.body.classList.remove('mode-'+name));
+  document.body.classList.add('mode-'+mode);
+}
+function playSceneEffect(effect,amount){
+  const scene=$('spaceScene'),pop=$('scorePop');
+  ['correct','wrong','launch','landing'].forEach(name=>scene.classList.remove('fx-'+name));
+  if(pop)pop.classList.remove('visible');
+  // Restart the CSS animation even when the same answer effect occurs consecutively.
+  void scene.offsetWidth;
+  scene.classList.add('fx-'+effect);
+  if(effect==='correct'&&pop){pop.textContent='+'+formatScore(amount)+' PTS';pop.classList.add('visible')}
+  if(typeof setTimeout==='function')setTimeout(()=>{scene.classList.remove('fx-'+effect);if(pop)pop.classList.remove('visible')},1250);
+}
 function updateHUD(){const max=DIFFICULTY[state.difficulty].capacity;const fuelPct=Math.max(0,Math.min(100,100*state.fuel/max));$('progressValue').textContent=Math.round(state.progress)+'%';$('progressBar').style.width=state.progress+'%';$('fuelValue').textContent=`${state.fuel} / ${max}`;$('fuelBar').style.width=fuelPct+'%';$('fuelBar').classList.toggle('low',fuelPct<=25);$('score').textContent=formatScore(state.score);$('correctCount').textContent=state.correct;$('wrongCount').textContent=state.wrong;$('discoveryCount').textContent=state.seen.size;updateShipPosition()}
-function updateShipPosition(){const p=state.progress/100;const x=18+64*p;const y=55-37.3*4*p*(1-p);$('ship').style.left=x+'%';$('ship').style.top=y+'%'}
+function updateShipPosition(){const p=state.progress/100;const x=18+64*p;const y=55-37.3*4*p*(1-p);$('ship').style.left=x+'%';$('ship').style.top=y+'%';$('scorePop').style.left=x+'%';$('scorePop').style.top=(y-11)+'%'}
 function setPlanet(el,world){el.className='planet planet-'+world.toLowerCase();el.querySelector('.planet-name').textContent=world.toUpperCase()}
-function updateLegUI(){const leg=currentLeg();$('stageTitle').innerHTML=leg.name.replace(' ', '<br><span>')+'</span>';$('stageSubtitle').textContent=leg.subtitle;$('stageCounter').innerHTML=state.difficulty==='insane'?String(state.insaneLegsCompleted+1)+'<span>/ ∞</span>':(state.leg+1)+'<span>/ 9</span>';$('flightStatus').textContent=state.difficulty.toUpperCase()+' · FLIGHT '+String(state.difficulty==='insane'?state.insaneLegsCompleted+1:state.leg+1).padStart(2,'0')+' ACTIVE';setPlanet($('planetStart'),leg.from);setPlanet($('planetEnd'),leg.to);$('sceneFrom').textContent=leg.from.toUpperCase();$('sceneTo').textContent=leg.to.toUpperCase();$('questionPhase').textContent=leg.options.join(' OR ').toUpperCase()+'?';$('questionPhase').classList.toggle('three-worlds',leg.options.length===3);$('flightMessage').textContent=leg.from+' → '+leg.to+' · Navigate by identifying the worlds in NASA imagery.';updateHUD()}
+function updateLegUI(){setVisualMode();const leg=currentLeg();$('stageTitle').innerHTML=leg.name.replace(' ', '<br><span>')+'</span>';$('stageSubtitle').textContent=leg.subtitle;$('stageCounter').innerHTML=state.difficulty==='insane'?String(state.insaneLegsCompleted+1)+'<span>/ ∞</span>':(state.leg+1)+'<span>/ 9</span>';$('flightStatus').textContent=state.difficulty.toUpperCase()+' · FLIGHT '+String(state.difficulty==='insane'?state.insaneLegsCompleted+1:state.leg+1).padStart(2,'0')+' ACTIVE';setPlanet($('planetStart'),leg.from);setPlanet($('planetEnd'),leg.to);$('sceneFrom').textContent=leg.from.toUpperCase();$('sceneTo').textContent=leg.to.toUpperCase();$('questionPhase').textContent=leg.options.join(' OR ').toUpperCase()+'?';$('questionPhase').classList.toggle('three-worlds',leg.options.length===3);$('flightMessage').textContent=leg.from+' → '+leg.to+' · Navigate by identifying the worlds in NASA imagery.';updateHUD()}
 let audioCtx;
 function beep(frequency=500,duration=.13,type='sine',volume=.09){if(!state.sound)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const oscillator=audioCtx.createOscillator(),gain=audioCtx.createGain();oscillator.type=type;oscillator.frequency.value=frequency;gain.gain.setValueAtTime(volume,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);oscillator.connect(gain).connect(audioCtx.destination);oscillator.start();oscillator.stop(audioCtx.currentTime+duration)}catch{}}
 function chime(){beep(680,.17,'triangle');setTimeout(()=>beep(920,.28,'triangle'),95)}
@@ -155,6 +173,7 @@ function answer(world,button){
     }else earned=d.points;
     state.score=Math.min(Number.MAX_VALUE,state.score+earned);
     state.seen.add(q.id);
+    playSceneEffect('correct',earned);
     chime();
     $('flightMessage').textContent='Correct! +'+formatScore(earned)+' points. Thrusters firing toward '+currentLeg().to+'.';
   }else{
@@ -163,6 +182,7 @@ function answer(world,button){
       state.progress=Math.max(0,state.progress-d.setback);
       state.score=Math.max(0,state.score-25);
     }
+    playSceneEffect('wrong');
     beep(190,.25,'sawtooth',.06);
     $('flightMessage').textContent=state.difficulty==='insane'?'One wrong answer! Insane run over.':'Navigation correction! The ship drifted backward.';
   }
@@ -182,13 +202,13 @@ function answer(world,button){
   $('nextQuestion').textContent=state.progress>=100?'LAND AT '+currentLeg().to.toUpperCase()+' →':state.fuel<=0?'VIEW MISSION RESULT →':'CONTINUE FLIGHT →';
 }
 function nextStep(){if(state.progress>=100){stageCompleted();return}if(state.fuel<=0){missionFailed('fuel');return}showQuestion()}
-function showDialog(icon,overline,title,description,reward,buttonText,onClick){$('dialogIcon').textContent=icon;$('dialogOverline').textContent=overline;$('dialogTitle').textContent=title;$('dialogDescription').textContent=description;$('dialogReward').innerHTML=reward;$('dialogButton').innerHTML=buttonText+' <span>→</span>';$('dialogOverlay').classList.remove('hidden');$('dialogSecondary').classList.add('hidden');$('dialogButton').onclick=()=>{$('dialogOverlay').classList.add('hidden');onClick()}}
+function showDialog(icon,overline,title,description,reward,buttonText,onClick){const overlay=$('dialogOverlay');overlay.classList.toggle('is-failure',overline.includes('FAILED')||overline.includes('ENDED'));overlay.classList.toggle('is-celebration',overline.includes('COMPLETE')||overline.includes('CONFIRMED')||overline.startsWith('INSANE SURVIVAL ·'));$('dialogIcon').textContent=icon;$('dialogOverline').textContent=overline;$('dialogTitle').textContent=title;$('dialogDescription').textContent=description;$('dialogReward').innerHTML=reward;$('dialogButton').innerHTML=buttonText+' <span>→</span>';$('dialogOverlay').classList.remove('hidden');$('dialogSecondary').classList.add('hidden');$('dialogButton').onclick=()=>{$('dialogOverlay').classList.add('hidden');onClick()}}
 function stageCompleted(){
   const leg=currentLeg(),completed=state.difficulty;
   state.status='landing';
   state.score=Math.min(Number.MAX_VALUE,state.score+DIFFICULTY[completed].landing);
   state.visited.push(leg.to);
-  updateHUD();chime();
+  updateHUD();chime();playSceneEffect('landing');
   if(state.leg===2||state.leg===5||state.leg===8){
     const nextDifficulty=completed==='easy'?'medium':completed==='medium'?'hard':'insane';
     const newlyUnlocked=!isUnlocked(nextDifficulty);
@@ -242,7 +262,7 @@ function startLeg(index){
   state.leg=index;state.progress=0;
   state.fuel=DIFFICULTY[state.difficulty].capacity;
   state.questionIndex=0;
-  updateLegUI();showQuestion();
+  updateLegUI();showQuestion();playSceneEffect('launch');
 }
 function resetGame(){state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.question=null;state.status='setup';state.insaneStreak=0;state.insaneLegsCompleted=0;$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 9</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
 function saveTelemetry(){try{sessionStorage.setItem('planet-impostor-latest',JSON.stringify({leg:state.leg,progress:state.progress,fuel:state.fuel,score:state.score,correct:state.correct,wrong:state.wrong}))}catch{}}
