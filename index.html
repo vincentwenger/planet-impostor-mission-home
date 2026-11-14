@@ -27,7 +27,7 @@
   <main class="main-grid">
     <section class="flight-panel panel" aria-label="Mission flight map">
       <div class="eyebrow"><span class="live-dot"></span> MISSION CONTROL <span class="separator">/</span> <span id="flightStatus">STANDBY</span></div>
-      <div class="flight-header"><div><h1 id="stageTitle">THE JOURNEY<br><span>STARTS HERE.</span></h1><p id="stageSubtitle">Configure your spacecraft. Then use NASA landscape clues to navigate across the Solar System.</p></div><div id="stageCounter" class="stage-counter">0<span>/ 4</span></div></div>
+      <div class="flight-header"><div><h1 id="stageTitle">THE JOURNEY<br><span>STARTS HERE.</span></h1><p id="stageSubtitle">Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.</p></div><div id="stageCounter" class="stage-counter">0<span>/ 4</span></div></div>
       <div id="spaceScene" class="space-scene">
         <div id="planetStart" class="planet planet-earth"><span class="planet-name">EARTH</span></div>
         <svg class="path-svg" viewBox="0 0 1000 330" preserveAspectRatio="none" aria-hidden="true"><path d="M 180 183 Q 500 60 820 183" stroke="rgba(169,202,243,.35)" stroke-width="2" fill="none" stroke-dasharray="6 11"/><path id="shipPath" d="M 180 183 Q 500 60 820 183" stroke="transparent" stroke-width="14" fill="none"/></svg>
@@ -40,15 +40,13 @@
         <div class="stat"><div class="stat-heading"><span>REMAINING FUEL</span><strong id="fuelValue">—</strong></div><div class="meter"><div id="fuelBar" class="meter-fill fuel-fill"></div></div></div>
       </div>
       <div class="mission-record"><div><span class="record-label">SCORE</span><strong id="score">0000</strong></div><div><span class="record-label">CORRECT</span><strong id="correctCount">0</strong></div><div><span class="record-label">INCORRECT</span><strong id="wrongCount">0</strong></div><div><span class="record-label">DISCOVERIES</span><strong id="discoveryCount">0</strong></div></div>
-      <div class="flight-footer"><span class="pulse-icon">✦</span><span id="flightMessage">Spacecraft systems awaiting configuration.</span></div>
+      <div class="flight-footer"><span class="pulse-icon">✦</span><span id="flightMessage">Spacecraft awaiting launch. Choose your difficulty.</span></div>
     </section>
     <section class="quiz-panel panel" aria-label="Game controls">
       <div id="setupScreen" class="screen setup-screen">
-        <div class="eyebrow green">PRE-FLIGHT CHECKLIST</div><h2>Build your ship.<br><span>Plan the mission.</span></h2><p class="subdued">Your choices change how quickly you advance and how much fuel each guess costs. Choose carefully.</p>
-        <div class="setup-group"><div class="setup-label"><span>01 / ENGINE SYSTEM</span><small>Speed vs. consumption</small></div><div class="select-cards" id="engineOptions"></div></div>
-        <div class="setup-group"><div class="setup-label"><span>02 / FUEL TANK</span><small>Capacity vs. mass</small></div><div class="select-cards" id="tankOptions"></div></div>
-        <div class="setup-group"><div class="setup-label"><span>03 / DIFFICULTY</span><small>Fuel risk</small></div><div class="select-cards" id="difficultyOptions"></div></div>
-        <div id="designReport" class="design-report"></div><p class="source-note">Inspired by NASA’s <a href="https://www.nasa.gov/wp-content/uploads/2025/04/250323-design-and-develop-science-mission.pdf" target="_blank" rel="noopener noreferrer">mission design process</a>: objective, spacecraft configuration, flight, and ground operations.</p>
+        <div class="eyebrow green">MISSION SETUP</div><h2>Choose your<br><span>difficulty.</span></h2><p class="subdued">One choice, then blast off! Your difficulty sets the fuel supply, forward progress, and wrong-answer penalty automatically.</p>
+        <div class="setup-group"><div class="setup-label"><span>FLIGHT DIFFICULTY</span><small>Easy · Medium · Hard</small></div><div class="select-cards" id="difficultyOptions"></div></div>
+        <div id="designReport" class="design-report" aria-live="polite"></div><p class="source-note">Inspired by NASA’s <a href="https://www.nasa.gov/wp-content/uploads/2025/04/250323-design-and-develop-science-mission.pdf" target="_blank" rel="noopener noreferrer">mission design process</a>. Flight and fuel values are simplified game rules.</p>
         <button id="launchButton" class="primary-button">LAUNCH MISSION <span>↗</span></button>
       </div>
       <div id="questionScreen" class="screen question-screen hidden">
@@ -65,7 +63,7 @@
   <footer class="site-footer"><span>© 2026 REUNIA SPACE AI · SI-ASSISTED CODE · INDEPENDENT HACKATHON PROTOTYPE</span><span><a href="NASA_SOURCES.md" target="_blank">NASA IMAGE CREDITS</a><span class="dot-separator">•</span> Simplified arcade physics — not a real trajectory simulator</span></footer>
 </div>
 <div class="overlay hidden" id="dialogOverlay" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog"><div id="dialogIcon" class="dialog-icon">🏆</div><div class="eyebrow green" id="dialogOverline">LANDING CONFIRMED</div><h2 id="dialogTitle">Destination reached!</h2><p id="dialogDescription"></p><div id="dialogReward" class="reward-box"></div><button id="dialogButton" class="primary-button">CONTINUE <span>→</span></button><button id="dialogSecondary" class="secondary-button hidden" type="button">RECONFIGURE SHIP</button></div></div>
-<div class="overlay hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="dialog help-dialog"><div class="eyebrow green">MISSION GUIDE</div><h2 id="helpTitle">How to play</h2><p>Travel Earth → Moon → Mars → Moon → Earth. Each question shows a NASA observation. Guess the world to advance your ship. Wrong guesses move you backward and cost extra fuel. Reach a base to refuel. Run out of fuel before landing and the mission fails.</p><p>Design choices demonstrate the trade-off between propulsion performance, fuel capacity, and mass. The flight path and quiz-related fuel usage are deliberately simplified for a learning game—not NASA flight-dynamics predictions.</p><p>Photos link to their original NASA records after you answer. If a NASA image cannot load, a labeled illustration and text clue appear so the game still works.</p><button id="closeHelp" class="primary-button">UNDERSTOOD <span>✓</span></button></div></div>
+<div class="overlay hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><div class="dialog help-dialog"><div class="eyebrow green">MISSION GUIDE</div><h2 id="helpTitle">How to play</h2><p>Travel Earth → Moon → Mars → Moon → Earth. Each question shows a NASA observation. Guess the world to advance your ship. Wrong guesses move you backward and cost extra fuel. Reach a base to refuel. Run out of fuel before landing and the mission fails.</p><p>Difficulty automatically changes fuel supply, forward progress, and navigation penalties. The flight path and fuel usage are simplified arcade mechanics—not NASA flight-dynamics predictions.</p><p>Photos link to their original NASA records after you answer. If a NASA image cannot load, a labeled illustration and text clue appear so the game still works.</p><button id="closeHelp" class="primary-button">UNDERSTOOD <span>✓</span></button></div></div>
 <script src="data.js"></script><script src="game.js"></script>
 <script>
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {

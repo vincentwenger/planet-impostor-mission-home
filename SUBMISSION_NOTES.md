@@ -17,7 +17,7 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 
 ## Suggested 30-second demo storyboard
 
-- 0–5s: Title / ship configuration (engine and tank trade-off)
+- 0–5s: Title / choose difficulty (automated mission fuel profile)
 - 5–11s: NASA landscape identification
 - 11–17s: ship moves, fuel meter drops, explanation and citation
 - 17–22s: moon landing, badge and refill
@@ -30,4 +30,4 @@ Keep the submission in **Save Progress** status while building. Do not click **S
 
 ## Scientific limitations
 
-The game uses **fictional arcade progress and fuel units**. The engineering learning outcome is qualitative (heavier tanks vs. capacity, efficient engines vs. speed). Do not claim realistic orbital propagation or validated delta-v values.
+The game uses **fictional arcade progress and fuel units**. The difficulty presets vary the simplified fuel budget, speed and setbacks. The model is not a realistic spacecraft engineering simulation. Do not claim realistic orbital propagation or validated delta-v values.

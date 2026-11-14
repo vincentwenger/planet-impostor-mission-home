@@ -17,7 +17,11 @@ const state=vm.runInContext('state',ctx);
 const qbank=vm.runInContext('NASA_QUESTIONS',ctx);
 assert.equal(qbank.length,23);assert.deepEqual([...new Set(qbank.map(q=>q.world))].sort(),['Earth','Mars','Moon']);
 assert(qbank.every(q=>q.source.startsWith('https://science.nasa.gov/photojournal/')&&q.image.includes(q.id+'.jpg')));
-assert.equal(get('engineOptions').children.length,3);assert.equal(get('tankOptions').children.length,3);
+assert.equal(get('difficultyOptions').children.length,3);
+assert.equal(state.difficulty,'medium');
+get('difficultyOptions').children[0].click();assert.equal(state.difficulty,'easy');assert.equal(state.fuel,150);
+get('difficultyOptions').children[2].click();assert.equal(state.difficulty,'hard');assert.equal(state.fuel,110);
+get('difficultyOptions').children[1].click();assert.equal(state.difficulty,'medium');assert.equal(state.fuel,110);
 get('launchButton').click();assert.equal(state.leg,0);assert.equal(state.status,'quiz');
 for(let leg=0;leg<4;leg++){
  assert.equal(state.leg,leg);assert.equal(state.status,'quiz');
@@ -33,4 +37,4 @@ for(let leg=0;leg<4;leg++){
 get('launchButton').click();state.fuel=1;state.progress=0;const wrong=state.question.world==='Earth'?'Moon':'Earth';
 vm.runInContext(`answer(${JSON.stringify(wrong)},document.getElementById('answerButtons').children[0])`,ctx);
 get('nextQuestion').click();assert.equal(state.status,'failed');
-console.log('PASS — 23 source records; setup; 4 legs; landing and refuel; victory; fuel-failure path.');
+console.log('PASS — difficulty presets; 23 source records; 4 legs; landing and refuel; victory; fuel-failure path.');

@@ -2,7 +2,7 @@
 
 **Reunia Space AI | NASA Space Apps Challenge 2026**
 
-A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate your spacecraft **Earth → Moon → Mars → Moon → Earth** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. Ship engine, tank capacity, and difficulty change the mission's resource constraints.
+A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate your spacecraft **Earth → Moon → Mars → Moon → Earth** by identifying which world appears in genuine NASA imagery. Correct answers advance your ship, incorrect answers move it backward; every decision consumes fuel. You land at bases for refueling and unlock badges. A single Easy / Medium / Hard difficulty choice automatically sets the mission’s fuel budget, speed and penalties.
 
 ## Run
 
@@ -20,15 +20,13 @@ The game HTML, CSS, JS and data catalog work locally. **Real NASA question image
 
 ## Gameplay
 
-1. Choose an engine: efficient/slow, balanced, or powerful/fuel-intensive.
-2. Choose a fuel tank: lightweight, standard, or heavy/high capacity.
-3. Select Cadet, Explorer or Commander difficulty.
+1. Choose **Easy**, **Medium** or **Hard**. Each mode automatically sets your fuel capacity and how far each correct/wrong answer moves your ship.
 4. Answer actual NASA terrain questions in each of four legs.
-5. Correct: +10%/+13%/+17% progress depending on engine. Wrong: -7% progress; both consume fuel. Reach 100% to land. Fail if fuel is exhausted first. For the final question, reaching a destination takes precedence over fuel reaching zero on the same move.
-6. Read a science explanation and open the original source after each answer.
-7. Refuel and earn a mission badge at each stop; win on Earth.
+3. Correct guesses move you closer and consume fuel. Wrong guesses move you backward and consume more fuel. Reach 100% to land; run out of fuel before arriving and you fail. If arrival and fuel exhaustion happen on the same answer, arriving wins.
+4. Read a science explanation and open the original source after each answer.
+5. Refuel and earn a mission badge at each stop; win on Earth.
 
-Fuel usage and movement are **simplified arcade mechanics**, not actual orbital dynamics, delta-v calculations or flight feasibility. Upgrades are intended to demonstrate qualitative mass/performance/fuel trade-offs, not scientific numerical predictions. Future versions can integrate actual trajectory data/mission cost budgets.
+Fuel usage and movement are **simplified arcade mechanics**, not actual orbital dynamics, delta-v calculations or flight feasibility. Preset difficulty profiles illustrate mission resource budgeting rather than realistic spacecraft engineering calculations. Future versions can integrate actual trajectory data/mission cost budgets.
 
 ## NASA sources
 
@@ -61,7 +59,7 @@ Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the
 - NASA Photojournal entries can include false/enhanced color, orbital views, and rover close-ups. These differences may hint at the answer. Enhanced-color entries are identified after the reveal.
 - Answers are randomized. The game may reuse some photos on later legs when a question deck has been exhausted.
 - No backend, accounts, multiplayer or persistent global leaderboard.
-- The current mission simulator is arcade-style; judging under **Space Mission Design Game** should emphasize the educational engineering trade-offs and explain that quantitative values are fictitious.
+- The current mission simulator is arcade-style; judging under **Space Mission Design Game** must clearly explain that the simplified fuel/speed profiles are arcade abstractions, not real mission design calculations. The fit with the official challenge should be evaluated carefully.
 
 ## Mobile app (PWA)
 
