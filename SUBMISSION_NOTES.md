@@ -45,3 +45,7 @@ Easy is available on first visit. A complete four-leg round trip on Easy unlocks
 - Recent image history is stored locally in the browser to reduce repeats between replay sessions on the same device. Clearing site data resets that history.
 - Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
 - Existing 2/3/3/2 answer choices, Easy→Medium→Hard progression, and all flight mechanics are unchanged.
+
+## Version 1.6 — question variety
+
+The game now avoids reusing NASA observations until all images eligible for the current journey have been shown. This used-image cycle persists across browser sessions and resets only when that journey’s eligible pool has been exhausted; no backend tracking is used.

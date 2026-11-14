@@ -1,11 +1,11 @@
 # Planet Impostor: Mission Home
 
-## Version 1.5 — more NASA images, fewer repeats
+## Version 1.6 — exhaust every available photo before repeating
 
 - 66 curated NASA observations: 22 Earth, 20 Moon, 24 Mars (previously 23 total).
 - Includes deserts, volcanic fields, glacial landscapes, polar craters, lunar ridges, Martian ice, and rover panoramas.
-- The same question is not intentionally repeated across the four flight legs until the eligible question catalog has been exhausted.
-- Recent image history is stored locally in the browser to reduce repeats between replay sessions on the same device. Clearing site data resets that history.
+- An image is **never repeated** while there is an unused image eligible for the current flight leg. A leg with Earth/Moon choices cycles through 42 photos; a leg with Earth/Moon/Mars choices cycles through all 66. If that leg exhausts its eligible pool, it begins a fresh cycle of those photos.
+- The complete used-photo cycle is saved in the browser across journeys, game restarts, and page reloads. This version carries forward the recent photo history saved by v1.5 where available. Clearing site data resets that history.
 - Source links and credit details appear after answers; NASA images remain externally hosted and require an internet connection.
 - Existing 2/3/3/2 answer choices, Easy→Medium→Hard progression, and all flight mechanics are unchanged.
 
@@ -40,7 +40,7 @@ Fuel usage and movement are **simplified arcade mechanics**, not actual orbital 
 
 ## NASA sources
 
-See [`NASA_SOURCES.md`](NASA_SOURCES.md) for every image, instrument, mission, image ID, description and credit. The question bank contains **23 curated NASA Photojournal entries**: 7 Earth, 6 Moon, 10 Mars. The labels are based on NASA's target fields and descriptions.
+See [`NASA_SOURCES.md`](NASA_SOURCES.md) for every image, instrument, mission, image ID, description and credit. The question bank contains **66 curated NASA Photojournal entries**: 22 Earth, 20 Moon, 24 Mars. The labels are based on NASA's target fields and descriptions.
 
 The image display uses an image delivery URL pattern from NASA Science assets; if NASA later changes it, use each record's linked NASA Photojournal page to obtain updated image URLs.
 
@@ -67,7 +67,7 @@ Game concept: Reunia Space AI. HTML/CSS/JS implementation was developed with the
 
 - Live NASA asset requests are needed for full photo gameplay and cannot be tested without network access; try the game in your browser and verify each photo loads before submitting.
 - NASA Photojournal entries can include false/enhanced color, orbital views, and rover close-ups. These differences may hint at the answer. Enhanced-color entries are identified after the reveal.
-- Answers are randomized from the worlds available on each flight leg. The game may reuse some photos on later legs when a question deck has been exhausted.
+- Answers are randomized from the worlds available on each flight leg. The game will only reuse a photo when every image eligible for the current leg has already appeared in that leg’s persistent used-photo cycle.
 - No backend, accounts, multiplayer or persistent global leaderboard. Difficulty unlocks are stored locally in the browser, not synced between devices; clearing site data can reset them.
 - The current mission simulator is arcade-style; judging under **Space Mission Design Game** must clearly explain that the simplified fuel/speed profiles are arcade abstractions, not real mission design calculations. The fit with the official challenge should be evaluated carefully.
 
@@ -86,3 +86,11 @@ This is a web app packaged like a phone game; it is **not yet** an App Store or 
 ## Version 1.5
 
 Difficulty progression: Easy available from the start, Medium unlocked by completing the full Easy round trip, Hard unlocked by completing the full Medium round trip. Locked modes are disabled visually and programmatically. Existing gameplay and NASA questions are unchanged.
+
+## Version 1.6 — persistent, strict no-repeat photo cycles
+
+- Once a NASA image is displayed, it is excluded from future selection while other images eligible for that flight leg remain unseen.
+- Previously viewed images are remembered in the browser, across page reloads and repeated missions, using `localStorage`.
+- When a flight leg runs out of eligible unseen images, those images become available again for a new cycle. Images from other worlds retain their history.
+- Version 1.5 recent-photo history is migrated automatically on first play of Version 1.6.
+- No user account is needed; private browsing or clearing site data resets image-use history.

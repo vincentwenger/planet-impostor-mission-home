@@ -16,7 +16,20 @@ const DIFFICULTY={
 const DIFFICULTY_ORDER=['easy','medium','hard'];
 const UNLOCK_STORAGE_KEY='planet-impostor-unlocked-difficulty-v1';
 const PHOTO_HISTORY_STORAGE_KEY='planet-impostor-recent-photo-ids-v1';
-function loadRecentPhotoIDs(){try{const ids=JSON.parse(localStorage.getItem(PHOTO_HISTORY_STORAGE_KEY)||'[]');return Array.isArray(ids)?ids.filter(id=>typeof id==='string').slice(-45):[]}catch{return []}}
+const PHOTO_CYCLE_STORAGE_KEY='planet-impostor-used-photo-ids-v1';
+// Keep the complete used-image history until a leg has exhausted every eligible NASA image.
+// Migrate Version 1.5's recent-image history when the new storage key is first introduced.
+function readStoredPhotoIDs(key){try{const ids=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(ids)?ids.filter(id=>typeof id==='string'):[]}catch{return []}}
+function loadUsedPhotoIDs(){
+  try {
+    const known=new Set(NASA_QUESTIONS.map(q=>q.id));
+    const current=localStorage.getItem(PHOTO_CYCLE_STORAGE_KEY);
+    const ids=current===null?readStoredPhotoIDs(PHOTO_HISTORY_STORAGE_KEY):readStoredPhotoIDs(PHOTO_CYCLE_STORAGE_KEY);
+    return new Set(ids.filter(id=>known.has(id)));
+  } catch {return new Set()}
+}
+function saveUsedPhotoIDs(ids){try{localStorage.setItem(PHOTO_CYCLE_STORAGE_KEY,JSON.stringify([...ids]))}catch{}}
+function loadRecentPhotoIDs(){return readStoredPhotoIDs(PHOTO_HISTORY_STORAGE_KEY).slice(-45)}
 function saveRecentPhotoIDs(ids){try{localStorage.setItem(PHOTO_HISTORY_STORAGE_KEY,JSON.stringify(ids.slice(-45)))}catch{}}
 function loadUnlockedRank(){
   try {const stored=Number(localStorage.getItem(UNLOCK_STORAGE_KEY));return Number.isInteger(stored)?Math.max(0,Math.min(2,stored)):0}
@@ -31,7 +44,7 @@ function unlockNextDifficulty(key){
   try{localStorage.setItem(UNLOCK_STORAGE_KEY,String(unlockedRank))}catch{}
   return DIFFICULTY_ORDER[unlockedRank];
 }
-const state={difficulty:'easy',leg:-1,progress:0,fuel:150,score:0,correct:0,wrong:0,seen:new Set(),visited:[],question:null,answered:false,photoLoaded:false,questionIndex:0,sound:true,deck:[],lastIDs:loadRecentPhotoIDs(),status:'setup'};
+const state={difficulty:'easy',leg:-1,progress:0,fuel:150,score:0,correct:0,wrong:0,seen:new Set(),visited:[],question:null,answered:false,photoLoaded:false,questionIndex:0,sound:true,usedPhotoIDs:loadUsedPhotoIDs(),lastIDs:loadRecentPhotoIDs(),status:'setup'};
 const shuffled=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 function makeOptionCards(container,choices,selected,onSelect){
   const root=$(container);root.innerHTML='';
@@ -66,14 +79,14 @@ function chime(){beep(680,.17,'triangle');setTimeout(()=>beep(920,.28,'triangle'
 function choosePhoto(){
   const options=LEGS[state.leg].options;
   const candidates=NASA_QUESTIONS.filter(q=>options.includes(q.world));
-  let unused=candidates.filter(q=>!state.deck.includes(q.id));
+  let unused=candidates.filter(q=>!state.usedPhotoIDs.has(q.id));
   if(!unused.length){
-    // Recycle only when every eligible NASA observation has appeared during this run.
-    const eligible=new Set(candidates.map(q=>q.id));
-    state.deck=state.deck.filter(id=>!eligible.has(id));
+    // Only start a new cycle after all images available for this leg have been shown.
+    // Keep the use records for worlds that cannot appear on this leg.
+    candidates.forEach(q=>state.usedPhotoIDs.delete(q.id));
     unused=candidates;
   }
-  // Avoid very recent questions across journeys AND between browser play sessions.
+  // Prefer variety among the still-unused candidates; never relax the no-repeat rule.
   const recent=new Set(state.lastIDs.slice(-22));
   let pool=unused.filter(q=>!recent.has(q.id));
   if(!pool.length)pool=unused;
@@ -84,7 +97,8 @@ function choosePhoto(){
   const balanced=pool.filter(q=>frequency[q.world]===least);
   if(balanced.length)pool=balanced;
   const q=pool[Math.floor(Math.random()*pool.length)];
-  state.deck.push(q.id);
+  state.usedPhotoIDs.add(q.id);
+  saveUsedPhotoIDs(state.usedPhotoIDs);
   state.lastIDs.push(q.id);
   if(state.lastIDs.length>45)state.lastIDs=state.lastIDs.slice(-45);
   saveRecentPhotoIDs(state.lastIDs);
@@ -107,7 +121,7 @@ function stageCompleted(){const leg=LEGS[state.leg];state.status='landing';state
 }showDialog(state.leg===0?'🌕':state.leg===1?'🔴':'✨','LANDING CONFIRMED',leg.to+' reached!','Your crew has safely arrived at '+leg.to+'. '+leg.message,`<strong>${leg.reward}</strong><br>Fuel will refill to ${DIFFICULTY[state.difficulty].capacity} at the base.`, 'LAUNCH NEXT LEG',()=>startLeg(state.leg+1))}
 function missionFailed(){state.status='failed';beep(150,.45,'sawtooth');showDialog('🚨','MISSION FAILED','Out of fuel','Your ship ran out of fuel on the way from '+LEGS[state.leg].from+' to '+LEGS[state.leg].to+'. You can retry this leg with a full tank, or choose another difficulty.',`<strong>FLIGHT REPORT</strong><br>Progress: ${state.progress}% · Score: ${state.score}<br>Tip: Easy mode gives you more fuel and smaller penalties.`, 'RETRY THIS LEG',()=>startLeg(state.leg));$('dialogSecondary').classList.remove('hidden');$('dialogSecondary').onclick=()=>{$('dialogOverlay').classList.add('hidden');resetGame()}}
 function startLeg(index){if(!isUnlocked(state.difficulty))return;state.leg=index;state.progress=0;state.fuel=DIFFICULTY[state.difficulty].capacity;state.questionIndex=0;updateLegUI();showQuestion()}
-function resetGame(){state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.deck=[];state.question=null;state.status='setup';$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 4</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
+function resetGame(){state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.question=null;state.status='setup';$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 4</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
 function saveTelemetry(){try{sessionStorage.setItem('planet-impostor-latest',JSON.stringify({leg:state.leg,progress:state.progress,fuel:state.fuel,score:state.score,correct:state.correct,wrong:state.wrong}))}catch{}}
 function drawStars(){const c=$('stars'),ctx=c.getContext('2d');if(!ctx)return;const w=window.innerWidth,h=window.innerHeight;const dpr=Math.min(devicePixelRatio||1,2);c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';ctx.scale(dpr,dpr);let seed=93;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};ctx.clearRect(0,0,w,h);for(let i=0;i<Math.floor(w*h/4800);i++){const x=rand()*w,y=rand()*h,r=rand()*1.3+.2;ctx.fillStyle=`rgba(198,228,255,${rand()*.5+.12})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}}
 $('launchButton').addEventListener('click',()=>{if(!isUnlocked(state.difficulty))return;beep(430,.25,'triangle');startLeg(0)});

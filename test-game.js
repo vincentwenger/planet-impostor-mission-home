@@ -10,11 +10,11 @@ class Node{
  getContext(){return{scale(){},clearRect(){},beginPath(){},arc(){},fill(){},set fillStyle(x){}}}
 }
 const saved=new Map();
-const storage={getItem(k){return saved.get(k)??null},setItem(k,v){saved.set(k,String(v))}};
-function createGame(){
+const makeStorage=store=>({getItem(k){return store.get(k)??null},setItem(k,v){store.set(k,String(v))}});
+function createGame(store=saved){
  const nodes={};const get=id=>nodes[id]||(nodes[id]=new Node(id));
  const doc={listeners:{},getElementById:get,createElement:()=>new Node(),addEventListener(event,fn){this.listeners[event]=fn}};
- const ctx={document:doc,window:{innerWidth:1366,innerHeight:900,addEventListener(){},AudioContext:class{constructor(){this.currentTime=0;this.destination={}}createOscillator(){return{frequency:{value:0},connect(){return{connect(){}}},start(){},stop(){}}}createGain(){return{gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}}}}},devicePixelRatio:1,sessionStorage:{setItem(){}},localStorage:storage,Math,setTimeout:(fn)=>fn(),console};ctx.global=ctx;vm.createContext(ctx);
+ const ctx={document:doc,window:{innerWidth:1366,innerHeight:900,addEventListener(){},AudioContext:class{constructor(){this.currentTime=0;this.destination={}}createOscillator(){return{frequency:{value:0},connect(){return{connect(){}}},start(){},stop(){}}}createGain(){return{gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}}}}},devicePixelRatio:1,sessionStorage:{setItem(){}},localStorage:makeStorage(store),Math,setTimeout:(fn)=>fn(),console};ctx.global=ctx;vm.createContext(ctx);
  vm.runInContext(fs.readFileSync(__dirname+'/data.js','utf8'),ctx);
  vm.runInContext(fs.readFileSync(__dirname+'/game.js','utf8'),ctx);
  return {get,doc,ctx,state:vm.runInContext('state',ctx),qbank:vm.runInContext('NASA_QUESTIONS',ctx)};
@@ -93,28 +93,77 @@ vm.runInContext(`answer(${JSON.stringify(wrong)},document.getElementById('answer
 get('nextQuestion').click();assert.equal(state.status,'failed');
 assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'2');
 
-// Regression: using more images must actually prevent repeat cards across flight legs.
+// Regression: NEVER repeat an eligible image until every eligible image has appeared.
+const CYCLE_KEY='planet-impostor-used-photo-ids-v1';
+const LEGACY_KEY='planet-impostor-recent-photo-ids-v1';
+function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto()',test.ctx)}
 {
- const test=createGame(), current=test.state, context=test.ctx;
- const seen=new Set();
- current.leg=0;
- for(let i=0;i<14;i++){
-  const q=vm.runInContext('choosePhoto()',context);
-  assert(!seen.has(q.id),'Earth/Moon mission unexpectedly reused an image');
-  seen.add(q.id);
+ const store=new Map(), test=createGame(store), earthMoonSeen=new Set();
+ // Phase 1 (Earth/Moon) has exactly 42 eligible images: 22 Earth + 20 Moon.
+ for(let i=0;i<17;i++){
+   const q=choose(test,0);
+   assert(['Earth','Moon'].includes(q.world));
+   assert(!earthMoonSeen.has(q.id),'repeated an Earth/Moon image before the pool was exhausted');
+   earthMoonSeen.add(q.id);
  }
- current.leg=1;
- for(let i=0;i<20;i++){
-  const q=vm.runInContext('choosePhoto()',context);
-  assert(!seen.has(q.id),'Moon/Mars mission repeated a prior-leg image');
-  seen.add(q.id);
+ assert.equal(JSON.parse(store.get(CYCLE_KEY)).length,17,'complete cycle persisted');
+ // Simulate browser refresh with localStorage retained. No old image may reappear.
+ const reloaded=createGame(store);
+ for(let i=17;i<42;i++){
+   const q=choose(reloaded,3);
+   assert(!earthMoonSeen.has(q.id),'replayed an image after a browser refresh');
+   earthMoonSeen.add(q.id);
  }
- assert.equal(seen.size,34,'question deck must continue across legs');
- const stored=JSON.parse(saved.get('planet-impostor-recent-photo-ids-v1'));
- assert(stored.length>0&&stored.length<=45,'photo history is bounded and persisted');
- const replay=createGame();
- replay.state.leg=0;
- const next=vm.runInContext('choosePhoto()',replay.ctx);
- assert(!stored.slice(-22).includes(next.id),'recent replay photo should be avoided if alternatives exist');
+ assert.equal(earthMoonSeen.size,42);
+ const recycled=choose(reloaded,0);
+ assert(earthMoonSeen.has(recycled.id),'after exhaustion the eligible images should be reused');
+ assert.equal(JSON.parse(store.get(CYCLE_KEY)).length,1,'new Earth/Moon cycle begins with one image');
+ // Mars must still appear only in three-choice journeys.
+ assert(['Earth','Moon'].includes(recycled.world));
 }
-console.log('PASS — v1.5 with 66 NASA images and persistent anti-repeat photo history;  Easy → Medium → Hard full-tour unlocks, persistence across reload, locked selections, 2/3/3/2 answers, keyboard, NASA records, 4 legs, victory and fuel failure.');
+{
+ const store=new Map(), game=createGame(store), seen=new Set();
+ // All 66 images are eligible for each Mars-related leg.
+ for(let i=0;i<35;i++){
+   const q=choose(game,i%2===0?1:2);
+   assert(!seen.has(q.id),'repeated an image during the 66-image all-world cycle');
+   seen.add(q.id);
+ }
+ // A full game restart must NOT wipe image history.
+ vm.runInContext('resetGame()',game.ctx);
+ const refreshed=createGame(store);
+ for(let i=35;i<66;i++){
+   const q=choose(refreshed,i%2===0?1:2);
+   assert(!seen.has(q.id),'repeated an image after restart or page reload');
+   seen.add(q.id);
+ }
+ assert.equal(seen.size,66,'every NASA observation should appear once per cycle');
+ assert.equal(JSON.parse(store.get(CYCLE_KEY)).length,66);
+ const recycled=choose(refreshed,1);
+ assert(seen.has(recycled.id),'repeats may begin only after all 66 images have been used');
+ assert.equal(JSON.parse(store.get(CYCLE_KEY)).length,1,'new cycle should contain only the next image');
+}
+{
+ const store=new Map([[LEGACY_KEY,JSON.stringify(['PIA17632','PIA04452'])]]);
+ const game=createGame(store);
+ assert(game.state.usedPhotoIDs.has('PIA17632'),'previous-version history was migrated');
+ assert(game.state.usedPhotoIDs.has('PIA04452'),'previous Mars history was migrated');
+ for(let i=0;i<12;i++){
+   const q=choose(game,1);
+   assert(!['PIA17632','PIA04452'].includes(q.id),'replayed one of the legacy recently seen images');
+ }
+}
+{
+ // When a 2-choice leg is exhausted, keep the use history of Mars images.
+ const store=new Map(), game=createGame(store);
+ const firstMars=choose(game,1);
+ if(firstMars.world!=='Mars'){
+   // Explicitly record a Mars image as already shown, independent of random draws.
+   game.state.usedPhotoIDs.add(game.qbank.find(q=>q.world==='Mars').id);
+   vm.runInContext('saveUsedPhotoIDs(state.usedPhotoIDs)',game.ctx);
+ }
+ const marsBefore=game.qbank.filter(q=>q.world==='Mars'&&game.state.usedPhotoIDs.has(q.id)).map(q=>q.id);
+ for(let i=0;i<43;i++)choose(game,0);
+ for(const id of marsBefore)assert(game.state.usedPhotoIDs.has(id),'Earth/Moon recycling erased Mars history');
+}
+console.log('PASS — v1.6 strict persistent no-repeat cycles, 66-image and 42-image exhaustion, migration, difficulty unlocks, NASA questions, 4 legs and fuel gameplay.');
