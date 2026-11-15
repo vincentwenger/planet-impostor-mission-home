@@ -1,3 +1,7 @@
+## v1.14.1 attribution update (deployed v1.14 baseline)
+
+The flight animation now visibly says **SI-ASSISTED SPACECRAFT & PLANET ARTWORK**. The footer clarifies **SI-ASSISTED CODE & VISUAL DESIGN** and that **NASA images are credited separately**. The illustrations are distinct from real NASA photograph questions with source links. The v1.14 game mechanics and challenge rules are unchanged.
+
 ## Current gameplay — Version 1.14 (same rules as v1.13)
 
 Each difficulty uses the same **Earth → Moon → Mars → Earth** three-flight circuit. The campaign starts on Easy; returning to Earth from Mars unlocks Medium, returning to Earth on Medium unlocks Hard, and returning to Earth on Hard unlocks endless Insane. The complete main campaign consists of **nine flights**. At each difficulty milestone, a landing/unlock overlay lets the player continue immediately from Earth with a full tank. Insane then repeats the same Earth → Moon → Mars → Earth loop indefinitely, starting from Earth.

@@ -1,3 +1,7 @@
+## Version 1.14.1 — NASA Space Apps attribution patch
+
+This small update on top of **v1.14** adds a clearly visible SI-assisted artwork label to the animated planet/spacecraft scene, and clarifies the footer's SI-assisted code and visual-design disclosure. NASA photography remains real NASA source material, credited separately. Gameplay is unchanged. See [`CHANGELOG_v1.14.1.md`](CHANGELOG_v1.14.1.md).
+
 # Planet Impostor: Mission Home — v1.13
 
 **Version 1.13 — a complete three-flight round trip per difficulty:** Each level now starts on **Earth**, visits the **Moon**, reaches **Mars**, and returns directly from **Mars to Earth**. Completing that final return leg on Easy unlocks Medium; on Medium it unlocks Hard; on Hard it unlocks endless Insane. The game continues automatically after a landing/unlock prompt, with a full fuel tank. The main campaign is **nine flights**, followed by an endless repeat of the same three-flight route in Insane. The Mars → Earth question has two choices, **Mars / Earth**, and displays photos only from those worlds (46 built-in eligible photos). All earlier difficulty unlocks remain saved on the device.

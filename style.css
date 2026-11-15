@@ -276,3 +276,17 @@ body.mode-insane .ship::before{filter:blur(8px) hue-rotate(-30deg)}
   .ship,.meter-fill,.primary-button,.answer-option{transition:none!important}
   .space-scene.fx-correct .scene-flash,.space-scene.fx-wrong .scene-flash,.space-scene.fx-landing .scene-flash,.space-scene.fx-launch .scene-flash{animation:none!important;opacity:0}
 }
+
+/* v1.14.1: persistent SI-visual disclosure on the decorative spacecraft/planet scene.
+   Keep this independent of quiz images: those are genuine NASA observations. */
+.artwork-disclosure{
+  position:absolute;top:8px;left:8px;z-index:7;pointer-events:none;
+  max-width:calc(100% - 16px);padding:5px 8px;border-radius:6px;
+  border:1px solid rgba(118,175,215,.45);background:rgba(4,15,29,.87);
+  color:#d6e9fb;font-size:9px;line-height:1.35;font-weight:800;
+  letter-spacing:.055em;text-align:left;
+  box-shadow:0 2px 10px rgba(0,0,0,.2);
+}
+@media(max-width:660px){
+  .artwork-disclosure{top:5px;left:5px;max-width:calc(100% - 10px);font-size:7px;padding:4px 5px;letter-spacing:0}
+}

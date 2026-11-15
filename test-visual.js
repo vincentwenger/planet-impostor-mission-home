@@ -24,7 +24,12 @@ for(const world of ['earth','moon','mars']){
  assert.equal(bytes.subarray(0,4).toString('ascii'),'RIFF');
  assert.equal(bytes.subarray(8,12).toString('ascii'),'WEBP');
 }
-assert(sw.includes('planet-impostor-mobile-v1.14'));
+assert(sw.includes('planet-impostor-mobile-v1.14.1'));
+assert(html.includes('class="artwork-disclosure"'), 'Missing visible on-scene SI artwork disclosure');
+assert(html.includes('SI-ASSISTED SPACECRAFT &amp; PLANET ARTWORK'), 'Missing SI artwork label');
+assert(html.includes('SI-ASSISTED CODE &amp; VISUAL DESIGN'), 'Missing footer SI code/visual acknowledgement');
+assert(html.includes('NASA IMAGES CREDITED SEPARATELY'), 'Missing real NASA image distinction');
+assert(css.includes('.artwork-disclosure') && css.includes('max-width:660px'), 'Missing responsive artwork disclosure styling');
 assert(js.includes("const UNLOCK_STORAGE_KEY='planet-impostor-unlocked-difficulty-v1'"));
 assert(js.includes("const PHOTO_CYCLE_STORAGE_KEY='planet-impostor-used-photo-ids-v1'"));
-console.log('PASS — v1.14 visual assets, scene markup, animated feedback hooks, reduced motion, and updated PWA cache.');
+console.log('PASS — v1.14.1 visual disclosure, v1.14 visual assets, scene markup, animated feedback hooks, reduced motion, and updated PWA cache.');
