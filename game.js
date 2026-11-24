@@ -67,8 +67,13 @@ function unlockNextDifficulty(key){
   try{localStorage.setItem(UNLOCK_STORAGE_KEY,String(unlockedRank))}catch{}
   return DIFFICULTY_ORDER[unlockedRank];
 }
-const state={difficulty:'easy',leg:-1,progress:0,fuel:150,score:0,correct:0,wrong:0,seen:new Set(),visited:[],question:null,answered:false,photoLoaded:false,questionIndex:0,sound:true,usedPhotoIDs:loadUsedPhotoIDs(),lastIDs:loadRecentPhotoIDs(),status:'setup',insaneStreak:0,insaneLegsCompleted:0};
+const GEARS={eco:{label:"ECO",speed:.5,burn:.4,miss:.6,setback:.5,points:.75},cruise:{label:"CRUISE",speed:1,burn:1,miss:1,setback:1,points:1},warp:{label:"WARP",speed:2,burn:2.5,miss:2,setback:2,points:2}};
+const GEAR_ORDER=["eco","cruise","warp"];
+const state={gear:"cruise",difficulty:'easy',leg:-1,progress:0,fuel:150,score:0,correct:0,wrong:0,seen:new Set(),visited:[],question:null,answered:false,photoLoaded:false,questionIndex:0,sound:true,usedPhotoIDs:loadUsedPhotoIDs(),lastIDs:loadRecentPhotoIDs(),status:'setup',insaneStreak:0,insaneLegsCompleted:0};
 const shuffled=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
+function gearProfile(){const d=DIFFICULTY[state.difficulty],g=GEARS[state.gear];return {speed:Math.max(1,Math.round(d.speed*g.speed)),burn:Math.max(1,Math.ceil(d.burn*g.burn)),miss:Math.ceil(d.miss*g.miss),setback:Math.ceil(d.setback*g.setback),points:Math.round((state.difficulty==='insane'?insaneAward(state.insaneStreak+1):d.points)*g.points)}}
+function renderGear(){const p=gearProfile();for(const key of GEAR_ORDER){const b=$('gear'+key[0].toUpperCase()+key.slice(1));b.setAttribute('aria-pressed',String(key===state.gear));b.disabled=state.status!=='quiz'||state.answered;} $('gearInfo').textContent=`${GEARS[state.gear].label} · Correct: +${p.speed}% / −${p.burn} fuel / +${formatScore(p.points)} pts · Wrong: −${p.setback}% / −${p.miss} fuel${state.difficulty==='insane'?' / RUN ENDS':''}`;$('spaceScene').classList.toggle('warp-drive',state.gear==='warp');$('spaceScene').classList.toggle('eco-drive',state.gear==='eco');$('scoreHint').textContent='SHIFT DRIVE · NEXT CORRECT +'+formatScore(p.points)+' POINTS';}
+function setGear(key){if(state.status!=='quiz'||state.answered||!GEARS[key])return;state.gear=key;renderGear();beep(key==='warp'?880:key==='eco'?330:550,.09,'triangle',.045);}
 function makeOptionCards(container,choices,selected,onSelect){
   const root=$(container);root.innerHTML='';
   Object.entries(choices).forEach(([key,v])=>{
@@ -157,20 +162,21 @@ function choosePhoto(){
   return q;
 }
 function showQuestion(){state.status='quiz';state.answered=false;state.questionIndex++;const q=state.question=choosePhoto();$('questionScreen').classList.remove('hidden');$('setupScreen').classList.add('hidden');$('questionCode').textContent='NASA OBSERVATION // '+q.id;$('questionNumber').textContent=String(state.questionIndex).padStart(2,'0');$('imageStatus').textContent='CONNECTING…';$('photoFallback').classList.add('hidden');$('fallbackClue').classList.add('hidden');$('resultBox').classList.add('hidden');$('questionFooter').classList.remove('hidden');$('scoreHint').textContent=state.difficulty==='insane'?'☄️ INSANE · NEXT CORRECT +'+formatScore(insaneAward(state.insaneStreak+1))+' POINTS · +10% PER CORRECT ANSWER':'✓ CORRECT ANSWER = +'+formatScore(DIFFICULTY[state.difficulty].points)+' POINTS';$('answerButtons').innerHTML='';$('answerButtons').classList.toggle('three-choices',currentLeg().options.length===3);
-  const photo=$('nasaPhoto');photo.style.display='block';photo.alt='NASA terrain observation. Identify its origin from '+currentLeg().options.join(', ')+'.';photo.onload=()=>{if(state.question!==q)return;state.photoLoaded=true;$('imageStatus').textContent='NASA IMAGE · '+q.id};photo.onerror=()=>{if(state.question!==q)return;state.photoLoaded=false;photo.style.display='none';$('imageStatus').textContent='IMAGE OFFLINE';$('photoFallback').classList.remove('hidden');$('fallbackClue').textContent='NASA image unavailable. Check your connection or reload the game.';$('fallbackClue').classList.remove('hidden')};photo.src=q.image;currentLeg().options.forEach((world,i)=>{const b=document.createElement('button');b.type='button';b.className='answer-option';b.textContent=(i+1)+'  ·  '+world.toUpperCase();b.addEventListener('click',()=>answer(world,b));$('answerButtons').append(b)})}
+  const photo=$('nasaPhoto');photo.style.display='block';photo.alt='NASA terrain observation. Identify its origin from '+currentLeg().options.join(', ')+'.';photo.onload=()=>{if(state.question!==q)return;state.photoLoaded=true;$('imageStatus').textContent='NASA IMAGE · '+q.id};photo.onerror=()=>{if(state.question!==q)return;state.photoLoaded=false;photo.style.display='none';$('imageStatus').textContent='IMAGE OFFLINE';$('photoFallback').classList.remove('hidden');$('fallbackClue').textContent='NASA image unavailable. Check your connection or reload the game.';$('fallbackClue').classList.remove('hidden')};photo.src=q.image;currentLeg().options.forEach((world,i)=>{const b=document.createElement('button');b.type='button';b.className='answer-option';b.textContent=(i+1)+'  ·  '+world.toUpperCase();b.addEventListener('click',()=>answer(world,b));$('answerButtons').append(b)});renderGear()}
 function answer(world,button){
   if(state.status!=='quiz'||state.answered)return;
   state.answered=true;state.status='answer';
   const q=state.question,correct=world===q.world,d=DIFFICULTY[state.difficulty];
-  const consumption=correct?d.burn:d.miss;
+  const profile=gearProfile();
+  const consumption=correct?profile.burn:profile.miss;
   let earned=0;
   if(correct){
-    state.progress=Math.min(100,state.progress+d.speed);
+    state.progress=Math.min(100,state.progress+profile.speed);
     state.correct++;
     if(state.difficulty==='insane'){
       state.insaneStreak++;
-      earned=insaneAward(state.insaneStreak);
-    }else earned=d.points;
+      earned=profile.points;
+    }else earned=profile.points;
     state.score=Math.min(Number.MAX_VALUE,state.score+earned);
     state.seen.add(q.id);
     playSceneEffect('correct',earned);
@@ -179,7 +185,7 @@ function answer(world,button){
   }else{
     state.wrong++;
     if(state.difficulty!=='insane'){
-      state.progress=Math.max(0,state.progress-d.setback);
+      state.progress=Math.max(0,state.progress-profile.setback);
       state.score=Math.max(0,state.score-25);
     }
     playSceneEffect('wrong');
@@ -188,14 +194,14 @@ function answer(world,button){
   }
   state.fuel=Math.max(0,state.fuel-consumption);
   $('resultBox').classList.remove('hidden');
-  $('resultHeadline').textContent=(correct?'✓ CORRECT · ':'✕ NOT QUITE · ')+q.world.toUpperCase()+' · '+(correct?'+'+d.speed:'−'+d.setback)+'% · −'+consumption+' FUEL'+(correct?' · +'+formatScore(earned)+' PTS':'');
+  $('resultHeadline').textContent=(correct?'✓ CORRECT · ':'✕ NOT QUITE · ')+q.world.toUpperCase()+' · '+(correct?'+'+profile.speed:'−'+profile.setback)+'% · −'+consumption+' FUEL'+(correct?' · +'+formatScore(earned)+' PTS':'');
   $('resultHeadline').style.color=correct?'#b8fc65':'#ffc08a';
   $('resultFact').textContent=q.name+' — '+q.region+'. '+q.fact+' Source: '+q.mission+(q.enhanced?' (enhanced-color image).':'.');
   $('resultSource').href=q.source;
   $('resultSource').textContent=(q.id.startsWith('PIA')?'NASA Photojournal ':'NASA image source · ')+q.id+' ↗';
   [...$('answerButtons').children].forEach(b=>{b.disabled=true;const val=b.textContent.split('·')[1]?.trim().toLowerCase();if(val===q.world.toLowerCase())b.classList.add('success');if(b===button&&!correct)b.classList.add('failure')});
   $('questionFooter').classList.add('hidden');
-  updateHUD();saveTelemetry();
+  renderGear();updateHUD();saveTelemetry();
   if(!correct&&state.difficulty==='insane'){
     missionFailed('wrong',q);return; // No extra chance or retrying the failed leg.
   }
@@ -259,12 +265,12 @@ function missionFailed(reason='fuel',question=null){
 }
 function startLeg(index){
   if(!isUnlocked(state.difficulty))return;
-  state.leg=index;state.progress=0;
+  state.leg=index;state.progress=0;state.gear="cruise";
   state.fuel=DIFFICULTY[state.difficulty].capacity;
   state.questionIndex=0;
   updateLegUI();showQuestion();playSceneEffect('launch');
 }
-function resetGame(){state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.question=null;state.status='setup';state.insaneStreak=0;state.insaneLegsCompleted=0;$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 9</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
+function resetGame(){state.gear="cruise";state.leg=-1;state.progress=0;state.correct=0;state.wrong=0;state.score=0;state.seen=new Set();state.visited=[];state.question=null;state.status='setup';state.insaneStreak=0;state.insaneLegsCompleted=0;$('setupScreen').classList.remove('hidden');$('questionScreen').classList.add('hidden');$('stageTitle').innerHTML='THE JOURNEY<br><span>STARTS HERE.</span>';$('stageSubtitle').textContent='Choose a difficulty, then use NASA landscape clues to navigate across the Solar System.';$('stageCounter').innerHTML='0<span>/ 9</span>';$('flightStatus').textContent='STANDBY';setPlanet($('planetStart'),'Earth');setPlanet($('planetEnd'),'Moon');$('sceneFrom').textContent='EARTH';$('sceneTo').textContent='MOON';$('flightMessage').textContent='Spacecraft awaiting launch. Choose your difficulty.';drawSetup();saveTelemetry()}
 function saveTelemetry(){try{sessionStorage.setItem('planet-impostor-latest',JSON.stringify({leg:state.leg,progress:state.progress,fuel:state.fuel,score:state.score,correct:state.correct,wrong:state.wrong}))}catch{}}
 function drawStars(){const c=$('stars'),ctx=c.getContext('2d');if(!ctx)return;const w=window.innerWidth,h=window.innerHeight;const dpr=Math.min(devicePixelRatio||1,2);c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';ctx.scale(dpr,dpr);let seed=93;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};ctx.clearRect(0,0,w,h);for(let i=0;i<Math.floor(w*h/4800);i++){const x=rand()*w,y=rand()*h,r=rand()*1.3+.2;ctx.fillStyle=`rgba(198,228,255,${rand()*.5+.12})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}}
 $('launchButton').addEventListener('click',()=>{if(!isUnlocked(state.difficulty))return;beep(430,.25,'triangle');startLeg(START_LEG_FOR_DIFFICULTY[state.difficulty])});
@@ -272,7 +278,8 @@ $('nextQuestion').addEventListener('click',nextStep);
 $('soundToggle').addEventListener('click',()=>{state.sound=!state.sound;$('soundToggle').textContent=state.sound?'♪':'♩';$('soundToggle').setAttribute('aria-label',state.sound?'Mute sounds':'Unmute sounds')});
 $('helpToggle').addEventListener('click',()=>$('helpOverlay').classList.remove('hidden'));
 $('closeHelp').addEventListener('click',()=>$('helpOverlay').classList.add('hidden'));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('helpOverlay').classList.add('hidden');return}if(state.status==='quiz'&&['1','2'].includes(e.key)){const i=Number(e.key)-1;const choice=currentLeg()?.options[i];const b=$('answerButtons').children[i];if(choice&&b)answer(choice,b)}else if(state.status==='answer'&&e.key==='Enter')nextStep()});
+for(const key of GEAR_ORDER){$('gear'+key[0].toUpperCase()+key.slice(1)).addEventListener('click',()=>setGear(key))}
+document.addEventListener('keydown',e=>{if(e.key==='Shift'){if(!e.repeat&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&$('helpOverlay').classList.contains('hidden')&&$('dialogOverlay').classList.contains('hidden'))setGear(GEAR_ORDER[(GEAR_ORDER.indexOf(state.gear)+1)%GEAR_ORDER.length]);return}if(e.key==='Escape'){$('helpOverlay').classList.add('hidden');return}if(state.status==='quiz'&&['1','2'].includes(e.key)){const i=Number(e.key)-1;const choice=currentLeg()?.options[i];const b=$('answerButtons').children[i];if(choice&&b)answer(choice,b)}else if(state.status==='answer'&&e.key==='Enter')nextStep()});
 window.addEventListener('resize',drawStars);
 resetGame();drawStars();
 if(typeof expandNasaQuestionLibrary==='function'&&typeof fetch==='function') {

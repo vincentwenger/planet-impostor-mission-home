@@ -290,3 +290,6 @@ body.mode-insane .ship::before{filter:blur(8px) hue-rotate(-30deg)}
 @media(max-width:660px){
   .artwork-disclosure{top:5px;left:5px;max-width:calc(100% - 10px);font-size:7px;padding:4px 5px;letter-spacing:0}
 }
+
+/* SHIFT DRIVE */
+.shift-console{border:1px solid #446581;background:#101e32;border-radius:12px;padding:12px;margin:12px 0;color:#e0f4ff}.shift-heading{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;letter-spacing:.06em}.shift-heading strong{color:#b8fc65}.shift-heading span{color:#b9cadd}.shift-gears{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}.shift-gears button{padding:10px 4px;border:1px solid #526c8b;border-radius:8px;background:#192e46;color:#d4e7fa;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.shift-gears button[aria-pressed=true]{border-color:#b8fc65;color:#b8fc65;background:#273b32;box-shadow:0 0 12px #b8fc6533}.shift-gears button:focus-visible{outline:2px solid white;outline-offset:2px}.shift-gears button:disabled{cursor:default;opacity:.7}.shift-console p{font-size:12px;line-height:1.5;margin:0;color:#d8e8f7}.shift-intro{font-size:13px;line-height:1.5;color:#b8fc65}.space-scene.warp-drive{box-shadow:inset 0 0 45px #a96cff66}.space-scene.warp-drive .flight-route{stroke:#e1a0ff}.space-scene.eco-drive .flight-route{stroke:#b8fc65}
