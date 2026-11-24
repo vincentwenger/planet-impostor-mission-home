@@ -98,11 +98,19 @@ for(let i=0;i<12;i++){
 }
 assert.equal(state.insaneLegsCompleted,12);
 assert(get('stageCounter').innerHTML.includes('∞'),'HUD shows the endless stage counter');
-// One wrong answer must end Insane immediately, without a chance to retry the leg.
+// Insane allows recovery after a mistake, but fuel exhaustion ends the run.
 const finalScore=state.score;
+state.progress=40;state.fuel=110;
 answerWrong({get,ctx,state});
-assert.equal(state.status,'failed');assert.equal(state.score,finalScore);
-assert.equal(get('dialogTitle').textContent,'One wrong answer — game over!');
+assert.equal(state.status,'answer');assert.equal(state.score,finalScore-50);
+assert.equal(state.fuel,86);assert.equal(state.progress,25);
+get('nextQuestion').click();assert.equal(state.status,'quiz');
+const beforeRecovery=state.insaneStreak;
+answerCorrect({get,ctx,state});assert.equal(state.insaneStreak,beforeRecovery+1);
+get('nextQuestion').click();assert.equal(state.status,'quiz');
+state.fuel=10;answerWrong({get,ctx,state});assert.equal(state.fuel,0);
+get('nextQuestion').click();assert.equal(state.status,'failed');
+assert.equal(get('dialogTitle').textContent,'Out of fuel — game over!');
 assert(get('dialogReward').innerHTML.includes('FINAL SURVIVAL SCORE'));
 assert.equal(saved.get('planet-impostor-unlocked-difficulty-v1'),'3');
 get('dialogButton').click();assert.equal(state.status,'quiz');assert.equal(state.leg,9);assert.equal(state.difficulty,'insane');assert.equal(state.insaneStreak,0);assert.equal(state.score,0);
@@ -244,6 +252,6 @@ function choose(test,leg){test.state.leg=leg;return vm.runInContext('choosePhoto
  for(let i=0;i<43;i++)choose(game,0);
  for(const id of marsBefore)assert(game.state.usedPhotoIDs.has(id),'Earth/Moon recycling erased Mars history');
 }
-console.log('PASS — v1.13 three-leg Earth → Moon → Mars → Earth cycles per difficulty; Earth-only unlocks; Mars/Earth NASA choices; exponential and endless Insane; immediate loss; persistent no-repeat images and fuel.');
+console.log('PASS — v1.13 three-leg Earth → Moon → Mars → Earth cycles per difficulty; Earth-only unlocks; Mars/Earth NASA choices; exponential and endless Insane; recoverable mistakes and fuel exhaustion; persistent no-repeat images and fuel.');
 
 {const g=createGame(new Map());g.get('launchButton').click();assert.equal(g.state.gear,'cruise');g.get('gearEco').click();assert.equal(g.state.gear,'eco');let p=vm.runInContext('gearProfile()',g.ctx);assert.equal(p.speed,9);assert.equal(p.burn,2);answerCorrect(g);assert.equal(g.state.progress,9);assert.equal(g.state.fuel,148);assert.equal(g.state.score,75);g.get('gearWarp').click();assert.equal(g.state.gear,'eco');g.get('nextQuestion').click();g.get('gearWarp').click();answerCorrect(g);assert.equal(g.state.progress,45);assert.equal(g.state.fuel,135);assert.equal(g.state.score,275);g.get('nextQuestion').click();let wrong=vm.runInContext('currentLeg().options.find(x=>x!==state.question.world)',g.ctx);vm.runInContext('answer('+JSON.stringify(wrong)+',null)',g.ctx);assert.equal(g.state.progress,37);assert.equal(g.state.fuel,119);console.log('PASS — SHIFT gear trade-offs, score, lock after answer, and wrong-answer penalty.');}

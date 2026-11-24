@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 // Every difficulty starts on Earth and completes the same three-flight loop:
 // Earth → Moon → Mars → Earth. Landing back on Earth advances Easy → Medium → Hard
-// → endless Insane. Insane repeats that route indefinitely until a wrong answer
+// → endless Insane. Insane repeats that route indefinitely until fuel runs out
 // or depleted fuel ends the survival run.
 const LEGS=[
   // Easy: Earth → Moon → Mars → Earth.
@@ -18,9 +18,9 @@ const LEGS=[
   {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'HARD: RED PLANET',subtitle:'Use NASA Moon and Mars observations to navigate this demanding flight.',reward:'🔴 Elite Mars Pathfinder badge',message:'Mars reached! Return to Earth to unlock Insane survival mode.'},
   {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'HARD: MISSION HOME',subtitle:'Recognize Mars or Earth to finish Hard and unlock the ultimate survival challenge.',reward:'🏆 Hard Mode Champion trophy',message:'Earth reached! Hard complete. Endless Insane begins on Earth.'},
   // Insane repeats these three flights forever until the player loses.
-  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'INSANE: LUNAR APPROACH',subtitle:'Survive the flight from Earth to the Moon. One wrong answer ends your run.',reward:'🌕 Insane Lunar Landing',message:'Refuel and head for Mars. Your streak carries over.'},
-  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'INSANE: RED PLANET',subtitle:'Identify Moon or Mars to survive another flight.',reward:'🔴 Insane Mars Landing',message:'Mars reached! Return directly to Earth without making a mistake.'},
-  {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'INSANE: EARTH RETURN',subtitle:'Distinguish Mars from Earth terrain. One mistake ends the run.',reward:'🌍 Insane Earth Return',message:'You are home! Start another endless three-flight cycle.'}
+  {from:'Earth',to:'Moon',options:['Earth','Moon'],name:'INSANE: LUNAR APPROACH',subtitle:'Survive the flight from Earth to the Moon. Wrong answers cost extra fuel and progress.',reward:'🌕 Insane Lunar Landing',message:'Refuel and head for Mars. Your reward multiplier carries over.'},
+  {from:'Moon',to:'Mars',options:['Moon','Mars'],name:'INSANE: RED PLANET',subtitle:'Identify Moon or Mars to survive another flight.',reward:'🔴 Insane Mars Landing',message:'Mars reached! Return directly to Earth while conserving fuel.'},
+  {from:'Mars',to:'Earth',options:['Mars','Earth'],name:'INSANE: EARTH RETURN',subtitle:'Distinguish Mars from Earth terrain. Manage your fuel to survive.',reward:'🌍 Insane Earth Return',message:'You are home! Start another endless three-flight cycle.'}
 ];
 const INSANE_START_LEG=9;
 const INSANE_LEG_COUNT=3;
@@ -33,7 +33,7 @@ const DIFFICULTY={
   easy:{name:'Easy',tag:'Relaxed flight · +100 pts',icon:'✦',speed:18,burn:5,miss:8,setback:4,capacity:150,points:100,landing:250},
   medium:{name:'Medium',tag:'Balanced flight · +200 pts',icon:'◇',speed:13,burn:8,miss:12,setback:7,capacity:110,points:200,landing:500},
   hard:{name:'Hard',tag:'Tough flight · +350 pts',icon:'⚡',speed:12,burn:9,miss:16,setback:10,capacity:110,points:350,landing:900},
-  insane:{name:'Insane',tag:'One mistake ends run · rising points',icon:'☄️',speed:12,burn:9,miss:110,setback:100,capacity:110,points:500,landing:1500}
+  insane:{name:'Insane',tag:'Severe penalties · rising points',icon:'☄️',speed:12,burn:9,miss:24,setback:15,capacity:110,points:500,landing:1500}
 };
 const INSANE_POINT_GROWTH=1.10; // Every correct Insane answer awards 10% more than the last.
 const DIFFICULTY_ORDER=['easy','medium','hard','insane'];
@@ -72,7 +72,7 @@ const GEAR_ORDER=["eco","cruise","warp"];
 const state={gear:"cruise",difficulty:'easy',leg:-1,progress:0,fuel:150,score:0,correct:0,wrong:0,seen:new Set(),visited:[],question:null,answered:false,photoLoaded:false,questionIndex:0,sound:true,usedPhotoIDs:loadUsedPhotoIDs(),lastIDs:loadRecentPhotoIDs(),status:'setup',insaneStreak:0,insaneLegsCompleted:0};
 const shuffled=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 function gearProfile(){const d=DIFFICULTY[state.difficulty],g=GEARS[state.gear];return {speed:Math.max(1,Math.round(d.speed*g.speed)),burn:Math.max(1,Math.ceil(d.burn*g.burn)),miss:Math.ceil(d.miss*g.miss),setback:Math.ceil(d.setback*g.setback),points:Math.round((state.difficulty==='insane'?insaneAward(state.insaneStreak+1):d.points)*g.points)}}
-function renderGear(){const p=gearProfile();for(const key of GEAR_ORDER){const b=$('gear'+key[0].toUpperCase()+key.slice(1));b.setAttribute('aria-pressed',String(key===state.gear));b.disabled=state.status!=='quiz'||state.answered;} $('gearReward').textContent='+'+formatScore(p.points)+' pts';$('gearBurn').textContent='−'+p.burn;$('gearRisk').textContent=state.difficulty==='insane'?'FATAL MISS':({eco:'LOW',cruise:'NORMAL',warp:'HIGH'}[state.gear]); $('gearInfo').textContent=`${GEARS[state.gear].label} · Correct: +${p.speed}% / −${p.burn} fuel / +${formatScore(p.points)} pts · Wrong: −${p.setback}% / −${p.miss} fuel${state.difficulty==='insane'?' / RUN ENDS':''}`;$('spaceScene').classList.toggle('warp-drive',state.gear==='warp');$('spaceScene').classList.toggle('eco-drive',state.gear==='eco');$('scoreHint').textContent='SHIFT DRIVE · NEXT CORRECT +'+formatScore(p.points)+' POINTS';}
+function renderGear(){const p=gearProfile();for(const key of GEAR_ORDER){const b=$('gear'+key[0].toUpperCase()+key.slice(1));b.setAttribute('aria-pressed',String(key===state.gear));b.disabled=state.status!=='quiz'||state.answered;} $('gearReward').textContent='+'+formatScore(p.points)+' pts';$('gearBurn').textContent='−'+p.burn;$('gearRisk').textContent=state.difficulty==='insane'?({eco:'ELEVATED',cruise:'HIGH',warp:'EXTREME'}[state.gear]):({eco:'LOW',cruise:'NORMAL',warp:'HIGH'}[state.gear]); $('gearInfo').textContent=`${GEARS[state.gear].label} · Correct: +${p.speed}% / −${p.burn} fuel / +${formatScore(p.points)} pts · Wrong: −${p.setback}% / −${p.miss} fuel`;$('spaceScene').classList.toggle('warp-drive',state.gear==='warp');$('spaceScene').classList.toggle('eco-drive',state.gear==='eco');$('scoreHint').textContent='SHIFT DRIVE · NEXT CORRECT +'+formatScore(p.points)+' POINTS';}
 function setGear(key){if(state.status!=='quiz'||state.answered||!GEARS[key])return;state.gear=key;renderGear();beep(key==='warp'?880:key==='eco'?330:550,.09,'triangle',.045);}
 function makeOptionCards(container,choices,selected,onSelect){
   const root=$(container);root.innerHTML='';
@@ -94,8 +94,8 @@ function drawSetup(){
   if(!isUnlocked(state.difficulty))state.difficulty='easy';
   makeOptionCards('difficultyOptions',DIFFICULTY,state.difficulty,key=>{state.difficulty=key;drawSetup()});
   const d=DIFFICULTY[state.difficulty];
-  $('difficultyHint').textContent=unlockedRank===0?'Finish Earth → Moon → Mars → Earth on Easy to unlock Medium.':unlockedRank===1?'Medium unlocked! Return to Earth on Medium to unlock Hard.':unlockedRank===2?'Hard unlocked! Return to Earth on Hard to unlock Insane.':'Insane unlocked! Survive endless Earth → Moon → Mars → Earth cycles with no wrong answers.';
-  $('designReport').innerHTML=`<b>${d.name.toUpperCase()} FLIGHT RULES</b><br>+${d.speed}% per correct answer · ${state.difficulty==='insane'?'One wrong answer ends your run':'−'+d.setback+'% per wrong answer'}<br>${d.burn} fuel per correct · ${d.capacity} fuel at takeoff.<br>${state.difficulty==='insane'?'First correct: +500 points; each next correct earns 10% more. Endless journey.':'Correct answer: +'+d.points+' points.'}<br><small>Flight and fuel values are simplified for gameplay, not real NASA trajectory calculations.</small>`;
+  $('difficultyHint').textContent=unlockedRank===0?'Finish Earth → Moon → Mars → Earth on Easy to unlock Medium.':unlockedRank===1?'Medium unlocked! Return to Earth on Medium to unlock Hard.':unlockedRank===2?'Hard unlocked! Return to Earth on Hard to unlock Insane.':'Insane unlocked! Survive endless Earth → Moon → Mars → Earth cycles with severe fuel and progress penalties.';
+  $('designReport').innerHTML=`<b>${d.name.toUpperCase()} FLIGHT RULES</b><br>+${d.speed}% per correct answer · −${d.setback}% / −${d.miss} fuel per wrong answer<br>${d.burn} fuel per correct · ${d.capacity} fuel at takeoff.<br>${state.difficulty==='insane'?'First correct: +500 points; each next correct earns 10% more. Endless journey.':'Correct answer: +'+d.points+' points.'}<br><small>Flight and fuel values are simplified for gameplay, not real NASA trajectory calculations.</small>`;
   const openingLeg=legAt(START_LEG_FOR_DIFFICULTY[state.difficulty]);
   setPlanet($('planetStart'),openingLeg.from);setPlanet($('planetEnd'),openingLeg.to);
   $('sceneFrom').textContent=openingLeg.from.toUpperCase();$('sceneTo').textContent=openingLeg.to.toUpperCase();
@@ -184,13 +184,11 @@ function answer(world,button){
     $('flightMessage').textContent='Correct! +'+formatScore(earned)+' points. Thrusters firing toward '+currentLeg().to+'.';
   }else{
     state.wrong++;
-    if(state.difficulty!=='insane'){
-      state.progress=Math.max(0,state.progress-profile.setback);
-      state.score=Math.max(0,state.score-25);
-    }
+    state.progress=Math.max(0,state.progress-profile.setback);
+    state.score=Math.max(0,state.score-(state.difficulty==='insane'?50:25));
     playSceneEffect('wrong');
     beep(190,.25,'sawtooth',.06);
-    $('flightMessage').textContent=state.difficulty==='insane'?'One wrong answer! Insane run over.':'Navigation correction! The ship drifted backward.';
+    $('flightMessage').textContent=state.difficulty==='insane'?'Severe navigation correction! Conserve fuel to recover.':'Navigation correction! The ship drifted backward.';
   }
   state.fuel=Math.max(0,state.fuel-consumption);
   $('resultBox').classList.remove('hidden');
@@ -202,9 +200,6 @@ function answer(world,button){
   [...$('answerButtons').children].forEach(b=>{b.disabled=true;const val=b.textContent.split('·')[1]?.trim().toLowerCase();if(val===q.world.toLowerCase())b.classList.add('success');if(b===button&&!correct)b.classList.add('failure')});
   $('questionFooter').classList.add('hidden');
   renderGear();updateHUD();saveTelemetry();
-  if(!correct&&state.difficulty==='insane'){
-    missionFailed('wrong',q);return; // No extra chance or retrying the failed leg.
-  }
   $('nextQuestion').textContent=state.progress>=100?'LAND AT '+currentLeg().to.toUpperCase()+' →':state.fuel<=0?'VIEW MISSION RESULT →':'CONTINUE FLIGHT →';
 }
 function nextStep(){if(state.progress>=100){stageCompleted();return}if(state.fuel<=0){missionFailed('fuel');return}showQuestion()}
@@ -224,7 +219,7 @@ function stageCompleted(){
     state.fuel=DIFFICULTY[nextDifficulty].capacity;
     updateHUD();
     const milestone='Earth reached!';
-    const intro=nextDifficulty==='insane'?' Insane mode is endless: one wrong answer ends the run. Each correct answer earns 10% more than the previous one.':'';
+    const intro=nextDifficulty==='insane'?' Insane mode is endless: wrong answers cost extra fuel, progress and points. Each correct answer earns 10% more than the previous one.':'';
     showDialog(completed==='hard'?'🏆':'🌍',completed.toUpperCase()+' COMPLETE',milestone,
       'You completed '+completed.toUpperCase()+'! Your ship refuels and continues automatically on '+nextDifficulty.toUpperCase()+' from '+leg.to+'.'+intro,
       `<strong>${leg.reward}</strong><br>${newlyUnlocked?'🔓 '+nextDifficulty.toUpperCase()+' MODE UNLOCKED!':nextDifficulty.toUpperCase()+' MODE READY'}<br>Fuel refilled to ${state.fuel}.`,
@@ -234,7 +229,7 @@ function stageCompleted(){
   if(completed==='insane'){
     state.insaneLegsCompleted++;
     showDialog(leg.to==='Moon'?'🌕':leg.to==='Mars'?'🔴':'🌍','INSANE SURVIVAL · '+state.insaneLegsCompleted+' LEGS',leg.to+' reached!',
-      'You survived another Insane flight! Your '+state.insaneStreak+'-answer streak keeps growing. One incorrect answer ends the run.',
+      'You survived another Insane flight! Your '+state.insaneStreak+' correct answers keep your reward multiplier growing. Keep conserving fuel.',
       `<strong>${leg.reward}</strong><br>Score: ${formatScore(state.score)} · Next correct answer: +${formatScore(insaneAward(state.insaneStreak+1))} points<br>Fuel refilled at landing.`,
       'CONTINUE INSANE RUN',()=>startLeg(state.leg+1));
     return;
@@ -247,10 +242,9 @@ function stageCompleted(){
 function missionFailed(reason='fuel',question=null){
   state.status='failed';beep(150,.45,'sawtooth');
   if(state.difficulty==='insane'){
-    const isWrong=reason==='wrong';
-    const explanation=isWrong?'The correct answer was '+question.world+'. '+question.name+' — '+question.region+'.':'Your spacecraft ran out of fuel.';
-    showDialog('💥','INSANE SURVIVAL ENDED',isWrong?'One wrong answer — game over!':'Out of fuel — game over!',
-      explanation+' You survived '+state.insaneLegsCompleted+' complete Insane flights and earned '+state.insaneStreak+' consecutive correct answers. The run is over.',
+    const explanation='Your spacecraft ran out of fuel.';
+    showDialog('💥','INSANE SURVIVAL ENDED','Out of fuel — game over!',
+      explanation+' You survived '+state.insaneLegsCompleted+' complete Insane flights and earned '+state.insaneStreak+' correct answers. The run is over.',
       `<strong>FINAL SURVIVAL SCORE</strong><br>${formatScore(state.score)} points · ${state.insaneStreak} Insane correct answers`,
       'NEW INSANE RUN',()=>{state.difficulty='insane';resetGame();startLeg(INSANE_START_LEG)});
     $('dialogSecondary').textContent='BACK TO DIFFICULTY SELECTION';

@@ -6,13 +6,13 @@ This small update on top of **v1.14** adds a clearly visible SI-assisted artwork
 
 **Version 1.13 — a complete three-flight round trip per difficulty:** Each level now starts on **Earth**, visits the **Moon**, reaches **Mars**, and returns directly from **Mars to Earth**. Completing that final return leg on Easy unlocks Medium; on Medium it unlocks Hard; on Hard it unlocks endless Insane. The game continues automatically after a landing/unlock prompt, with a full fuel tank. The main campaign is **nine flights**, followed by an endless repeat of the same three-flight route in Insane. The Mars → Earth question has two choices, **Mars / Earth**, and displays photos only from those worlds (46 built-in eligible photos). All earlier difficulty unlocks remain saved on the device.
 
-**Scoring and Insane mode are unchanged:** Correct answers earn **100 points on Easy**, **200 on Medium**, **350 on Hard**, and on Insane **500 × 1.10^(n−1)** on its nth consecutive correct answer. Insane continues forever until a single wrong answer or insufficient fuel ends the run. The bonus compounds across landings; landing bonuses remain 250 / 500 / 900 / 1,500. The 66 built-in NASA questions, optional filtered NASA catalog expansion, and strict per-route no-repeat history remain available.
+**SHIFT Edition scoring and Insane mode:** Correct answers earn **100 points on Easy**, **200 on Medium**, **350 on Hard**, and on Insane **500 × 1.10^(n−1)** on its nth correct answer. Insane continues forever until insufficient fuel ends the run. The bonus compounds across landings; landing bonuses remain 250 / 500 / 900 / 1,500. The 66 built-in NASA questions, optional filtered NASA catalog expansion, and strict per-route no-repeat history remain available.
 
 **Version 1.12 (historical):** All flights were changed to two answer choices: Earth / Moon or Moon / Mars, with the choices shown in travel order. Version 1.13 adds Mars / Earth and retains two choices for every flight.
 
 **Version 1.11 (historical):** Added the unlockable endless Insane survival mode, immediate game over on a wrong answer, exponential scoring, and greater rewards for higher difficulties. The Insane route originally went Mars → Moon → Earth → Moon → Mars; Version 1.13 instead repeats the direct Earth → Moon → Mars → Earth loop.
 
-**Quick tests:** `node test-game.js` and `node test-catalog.js`. The first checks campaign unlocks, looping Insane journeys, score growth, immediate failure on a wrong answer, and preserved no-repeat image cycling. The second simulates NASA archive responses and screening; it does not validate every remote image visually. For a real NASA image check, load the website online and inspect the returned photos.
+**Quick tests:** `node test-game.js` and `node test-catalog.js`. The first checks campaign unlocks, looping Insane journeys, score growth, recovery after wrong answers and failure on fuel exhaustion, and preserved no-repeat image cycling. The second simulates NASA archive responses and screening; it does not validate every remote image visually. For a real NASA image check, load the website online and inspect the returned photos.
 
 ---
 
@@ -88,7 +88,7 @@ See [`CHANGELOG_v1.14.md`](CHANGELOG_v1.14.md) for change details and limitation
 
 **Reunia Space AI | NASA Space Apps Challenge 2026**
 
-A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate **Earth → Moon → Mars → Earth** on Easy, Medium, and Hard, identifying worlds in genuine NASA imagery. Returning safely to Earth completes each difficulty and unlocks the next. Finishing Hard unlocks endless **Insane**, which repeats the same three-flight cycle until you make a wrong guess or run out of fuel. Each difficulty awards more points and provides its own arcade flight rules. A single wrong guess ends an Insane run, while correct-answer rewards compound by 10% with every consecutive Insane answer.
+A mobile-optimized, installable Progressive Web App (PWA) and desktop browser game. Navigate **Earth → Moon → Mars → Earth** on Easy, Medium, and Hard, identifying worlds in genuine NASA imagery. Returning safely to Earth completes each difficulty and unlocks the next. Finishing Hard unlocks endless **Insane**, which repeats the same three-flight cycle until you run out of fuel. Each difficulty awards more points and provides its own arcade flight rules. Wrong guesses cost extra fuel and progress, plus 50 points; correct-answer rewards compound by 10% with every correct Insane answer.
 
 ## Run
 
@@ -109,7 +109,7 @@ The game HTML, CSS, JS and data catalog work locally. **Real NASA question image
 1. Only **Easy** is initially available. Launch from Earth, land on the Moon, travel to Mars, then fly directly back to Earth. **Reaching Earth** completes Easy and unlocks Medium; the game switches modes automatically after a Continue dialog.
 2. On **Medium**, repeat **Earth → Moon → Mars → Earth**. Returning home unlocks Hard and begins the Hard cycle from Earth.
 3. On **Hard**, repeat **Earth → Moon → Mars → Earth** a third time. Returning to Earth unlocks **Insane** and automatically starts survival play from Earth.
-4. On **Insane**, repeat **Earth → Moon → Mars → Earth** indefinitely. A single wrong answer ends the run immediately; so does running out of fuel. Each consecutive correct answer increases its reward by 10% (500, 550, 605, 666, ...), and the multiplier does **not** reset at landings.
+4. On **Insane**, repeat **Earth → Moon → Mars → Earth** indefinitely. Wrong answers cost 24 fuel and 15% progress in Cruise (modified by gear), plus 50 points. Running out of fuel before landing ends the run. Each correct answer increases its reward by 10% (500, 550, 605, 666, ...), and the multiplier does **not** reset at landings.
 5. Every flight displays **two answers in travel order**: Earth / Moon, Moon / Mars, or Mars / Earth. The current leg's NASA question images are drawn only from those two worlds. Keyboard keys **1 and 2** select answers.
 6. Correct guesses move the ship forward; wrong guesses on Easy, Medium, and Hard move it backward. Every guess uses fuel. Landing refills the tank. Reaching 100% on the same answer that depletes fuel still counts as an arrival.
 7. The game avoids repeating NASA images until all eligible images for the current route have appeared, preserving this history and unlocked difficulties across reloads.
